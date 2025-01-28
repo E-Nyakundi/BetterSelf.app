@@ -1,0 +1,41 @@
+{% extends 'tm_base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'Time_Manager/routines.css' %}">
+    {% block title %} Routines {% endblock %}
+{% endblock %}
+
+{% block content %}
+    <section id="create_routinee" class="routine-form">
+        <h1>{% if form.instance.pk %} Edit Routine {% else %} Create Routine {% endif %}</h1>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">{% if form.instance.pk %} Update Routine {% else %} Create Routine {% endif %}</button>
+        </form>
+    </section>
+
+    <section class="weekday">
+        <h1>Weekday Routines</h1>
+        {% for routine in routines %}
+            <div class="{{ routine.name|replace_spaces }}-routine">
+                <h2>{{ routine.name }}</h2>
+                <p>{{ routine.instruction }}</p>
+                <a href="{% url 'edit_routine' routine.id %}">Edit</a>
+            </div>
+        {% endfor %}
+    </section>
+
+    <section class="weekends">
+        <h1>Weekend Routines</h1>
+        {% for routine in weekend_routines %}
+            <div class="{{ routine.name|replace_spaces }}-routine">
+                <h2>{{ routine.name }}</h2>
+                <p>{{ routine.instruction }}</p>
+                <a href="{% url 'edit_routine' routine.id %}">Edit</a>
+            </div>
+        {% endfor %}
+    </section>
+{% endblock %}

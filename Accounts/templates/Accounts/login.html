@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+    
+<head>
+	<title>Login</title>
+	<link rel="stylesheet" href="{% static 'Accounts/login.css' %}" >
+
+</head>
+<body>
+	<div>
+		<form method="POST" action="">
+			{% csrf_token %}
+			{{ form.as_p }}
+			<button type="submit" class="btn glow-effect">submit😎
+				<svg class="glow-container">
+    				<rect class="glow-blur" pathlength="100" stroke-line-cap="round"></rect>
+    				<rect class="glow-line" pathlength="100" stroke-line-cap="round"></rect>
+    			</svg>
+		    </button>
+		</form>
+        {% if error %}
+            <div class="alert alert-danger mt-3">{{ error }}</div>
+        {% endif %}
+	</div>
+</body>
+
+</html>

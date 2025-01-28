@@ -1,0 +1,13 @@
+{% extends "goal_form_base.html" %}
+
+{% block title %}Daily Goal{% endblock %}
+
+{% block form %}
+    <!-- Only show the delete button if we're editing an existing goal -->
+    {% if goal %}
+        <form method="POST" action="{% url 'delete_goal' 'weekly' goal.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Delete</button>
+        </form>
+    {% endif %}
+{% endblock %}

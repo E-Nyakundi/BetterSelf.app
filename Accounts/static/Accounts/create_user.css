@@ -1,0 +1,131 @@
+/* Set root variables for width and height */
+* {
+    --width: 100vw;
+    --height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+/* Set body font */
+body {
+    font-family: Arial, sans-serif;
+}
+
+/* Create a grid layout with 3x3 cells */
+.main-div {
+    width: var(--width);
+    height: var(--height);
+    display: grid;
+    align-items: center;
+    justify-content: center;
+    grid-template-rows: repeat(6, 1fr);
+    grid-template-columns: repeat(6, 1fr);
+}
+
+/* Style the form element */
+form {
+    grid-area: 2 / 2 / 6 / 6; /* Position form in the center cell */
+    background: #ffdcdc;
+    border-radius: 30px;
+    box-shadow: 10px 30px 100px #ffd7d7;
+    margin: 10px;
+    padding: 25px 35px;
+    display: grid;
+    grid-template-rows: repeat(6, 1fr);
+    grid-template-columns: repeat(4, 1fr);
+    justify-items: center;
+    align-items: center;
+    font-family: sans-serif;
+    font-size: 24px;
+    position: relative;
+}
+
+.form-fields {
+    grid-area: 1/2/6/4;
+    display: grid;
+    align-items: center;
+    grid-template-columns: 1fr 2fr;
+    grid-column: 1 / 5;
+}
+
+.form-fields .label {
+    text-align: right;
+    padding-right: 10px;
+}
+
+.button{
+    grid-area: 6/2/7/4;
+}
+
+form input {
+    font-family: sans-serif;
+    font-size: 24px;
+    border-radius: 1em;
+    padding: 8px 15px;
+    margin: 10px;
+}
+
+/* form button */
+form button {
+    border: 0;
+    border-radius: 1.25rem;
+    padding: .2em .5em;
+    margin: 5px;
+    cursor: pointer;
+    position: relative;
+    font-size: 1.2rem;
+    background: #000;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.glow-effect {
+    --cont-offset: 20px;
+    --clr-glow-line: rgba(212 255 250);
+    --clr-glow-blur: rgba(212 255 250);
+    --clr-glow-line-btn2: rgba(212 255 250);
+    --clr-glow-blur-btn2: #f7d1d1;
+    --width-glow-line: 2px;
+    --size-glow-blur: 20px;
+}
+
+.glow-container {
+    position: absolute;
+    /*outline: 3px solid #000;*/
+    width: calc(100% + var(--cont-offset));
+    height: calc(100% + var(--cont-offset));
+    inset: calc(var(--cont-offset) / -2);
+    pointer-events: none;
+}
+
+.glow-blur, .glow-line {
+    rx: 1.25rem;
+    width: calc(100% - var(--cont-offset));
+    height: calc(100% - var(--cont-offset));
+    x: calc(var(--cont-offset) / 2);
+    y: calc(var(--cont-offset) / 2);
+    fill: transparent;
+    stroke-dasharray: 20px 30px;
+    transition: stroke-dashoffset 2s;
+}
+
+.glow-effect:hover .glow-blur, .glow-effect:hover .glow-line {
+    stroke-dashoffset: -65px;
+}
+
+.glow-line {
+    stroke: var(--clr-glow-line);
+    stroke-width: var(--width-glow-line);
+}
+
+.glow-blur {
+    filter: blur(var(--size-glow-blur));
+    stroke: var(--clr-glow-blur);
+    stroke-width: var(--size-glow-blur);
+}
+
+.btn .glow-line {
+    stroke: var(--clr-glow-line-btn2);
+}

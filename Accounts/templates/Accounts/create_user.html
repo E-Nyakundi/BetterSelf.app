@@ -1,0 +1,33 @@
+<!doctype html>
+{% load static %}
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>CreateUser</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="{% static 'Accounts/create_user.css' %}">
+    </head>
+    <body>
+        <div class="main-div">
+            <form method="POST" action="">
+                {% csrf_token %}
+                <div class="form-fields">
+                    {% for field in form %}
+                        <label class="label">{{ field.label }} :</label>
+                        {{ field }}
+                    {% endfor %}
+                </div>
+                <div class="button">
+                    <button type="submit" class="btn glow-effect">submit😎
+                        <svg class="glow-container">
+                            <rect class="glow-blur" pathlength="100" stroke-line-cap="round"></rect>
+                            <rect class="glow-line" pathlength="100" stroke-line-cap="round"></rect>
+                        </svg>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </body>
+</html>

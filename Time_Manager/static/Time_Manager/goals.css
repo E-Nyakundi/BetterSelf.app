@@ -1,0 +1,76 @@
+/* General reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    color: #000;
+}
+
+.tm-nav a {
+    color: #000;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+    color: #4CAF50;
+}
+
+body {
+    position: relative;
+    font-family: Arial, sans-serif;
+}
+
+/* Main container with grid layout */
+main {
+    padding: 0;
+}
+
+/* Goal Table Styling */
+.goal-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.goal-table th,
+.goal-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.goal-table th {
+    background-color: #4CAF50;
+    color: white;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    text-align: center;
+}
+
+.goal-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.goal-table tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Highlight selected row */
+.goal-table tr.selected {
+    background-color: #e0f7e0;
+}
+
+/* Responsive Table */
+@media (max-width: 768px) {
+    .goal-table table {
+        font-size: 12px;
+    }
+
+    .goal-table th,
+    .goal-table td {
+        padding: 6px;
+    }
+}
+ td a{
+    color: #000;
+ }

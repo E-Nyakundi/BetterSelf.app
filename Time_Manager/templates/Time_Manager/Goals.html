@@ -1,0 +1,92 @@
+{% extends "tm_base.html" %}
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'tm_base.css' %}">
+<link rel="stylesheet" href="{% static 'Time_Manager/goals.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="goal-table">
+    <table>
+        <thead>
+            <tr>
+                <th scope="col">Goal</th>
+                <th scope="col">Yearly Goal</th>
+                <th scope="col">Monthly Goal</th>
+                <th scope="col">Weekly Goal</th>
+                <th scope="col">Daily Goal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if goals %}
+                {% for goal in goals %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'edit_goal' goal.id %}" aria-label="Edit {{ goal.name }}">{{ goal.name }}</a>
+                            <a href="{% url 'create_yearly_goal' %}?goal={{ goal.id }}" class="create-link">+ Create Yearly Goal</a>
+                        </td>
+                        <td colspan="4"></td>
+                    </tr>
+                    {% for yearly_goal in goal.yearly_goals.all %}
+                        <tr>
+                            <td></td>
+                            <td>
+                                <a href="{% url 'edit_yearly_goal' yearly_goal.id %}" aria-label="Edit {{ yearly_goal.goal }}">{{ yearly_goal.goal }}</a>
+                                <a href="{% url 'create_monthly_goal' %}?year={{ yearly_goal.id }}" class="create-link">+ Create Monthly Goal</a>
+                            </td>
+                            <td colspan="3"></td>
+                        </tr>
+                        {% for monthly_goal in yearly_goal.monthly_goals.all %}
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td>
+                                    <a href="{% url 'edit_monthly_goal' monthly_goal.id %}" aria-label="Edit {{ monthly_goal.goal }}">{{ monthly_goal.goal }}</a>
+                                    <a href="{% url 'create_weekly_goal' %}?month={{ monthly_goal.id }}" class="create-link">+ Create Weekly Goal</a>
+                                </td>
+                                <td colspan="2"></td>
+                            </tr>
+                            {% for weekly_goal in monthly_goal.weekly_goals.all %}
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>
+                                        <a href="{% url 'edit_weekly_goal' weekly_goal.id %}" aria-label="Edit {{ weekly_goal.goal }}">{{ weekly_goal.goal }}</a>
+                                        <a href="{% url 'create_daily_goal' %}?week={{ weekly_goal.id }}" class="create-link">+ Create Daily Goal</a>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                {% for daily_goal in weekly_goal.daily_goals.all %}
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td>
+                                            <a href="{% url 'edit_daily_goal' daily_goal.id %}" aria-label="Edit {{ daily_goal.goal }}">{{ daily_goal.goal }}</a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% endfor %}
+                        {% endfor %}
+                    {% endfor %}
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="5" style="text-align: center; color: #666; font-style: italic;">
+                        No goals found. <a href="{% url 'create_goal' %}" style="color: #4CAF50;">Add a new goal</a>.
+                    </td>
+                </tr>
+            {% endif %}
+            <!-- Add a generic link for creating a new main goal -->
+            <tr>
+                <td colspan="5" style="text-align: center;">
+                    <a href="{% url 'create_goal' %}" class="create-link" aria-label="Add a new main goal">+ Add New Goal</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+{% endblock %}

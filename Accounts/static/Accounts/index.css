@@ -1,0 +1,155 @@
+*{
+    --width:100vw;
+    --height: 100vh;
+	margin: 0;
+	padding: 0;
+}
+body {
+    font-family: Arial, sans-serif;
+}
+
+.mastercard {
+    display: grid;
+    grid-template-rows: repeat(8, 1fr);
+    grid-template-columns: repeat(8, 1fr);
+    height: var(--height);
+    background-image: url("\index2.jpg");
+    background-size: cover;   /* Ensures the image covers the entire container */
+    background-position: center center;  /* Keeps the background centered */
+    background-repeat: no-repeat; /* Prevents the image from repeating */
+}
+
+.card {
+    grid-area: 2 / 2 / 8 / 8;
+    display: grid;
+    text-align: center;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    margin: 25px;
+    padding: 25px;
+    color: #000000;
+    box-shadow: 2px 2px 250px rgba(255, 181, 181, 0.507);
+    background: linear-gradient(to bottom right, #cdfff885, #ffdada99);
+    border-radius: 1rem;
+}
+
+.card1 {
+    display: grid;
+    grid-template-rows: repeat(3, 1fr);
+    grid-template-columns: repeat(8, 1fr);
+}
+
+.btn-1, .btn-2 {
+	text-decoration: none;
+    border: 0;
+    border-radius: 1.25rem;
+    padding: .5em .5em;
+    margin: 5px;
+    cursor: pointer;
+    position: relative;
+    font-size: 1rem;
+}
+
+.btn-1 {
+    grid-area: 2 / 3 / 3 / 4;
+    background: #000;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-2 {
+    grid-area: 2 / 6 / 3 / 7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    color: #000;
+}
+
+.glow-effect {
+    --cont-offset: 5px;
+    --clr-glow-line: rgba(212 255 250);
+    --clr-glow-blur: rgba(212 255 250);
+    --clr-glow-line-btn2: rgba(212 255 250);
+    --clr-glow-blur-btn2: #f7d1d1;
+    --width-glow-line: 2px;
+    --size-glow-blur: 5px;
+}
+
+.glow-container {
+    position: absolute;
+    /*outline: 3px solid #000;*/
+    width: calc(100% + var(--cont-offset));
+    height: calc(100% + var(--cont-offset));
+    inset: calc(var(--cont-offset) / -2);
+    pointer-events: none;
+}
+
+.glow-blur, .glow-line {
+    rx: 1.25rem;
+    width: calc(100% - var(--cont-offset));
+    height: calc(100% - var(--cont-offset));
+    x: calc(var(--cont-offset) / 2);
+    y: calc(var(--cont-offset) / 2);
+    fill: transparent;
+    stroke-dasharray: 20px 30px;
+    transition: stroke-dashoffset 2s;
+}
+
+.glow-effect:hover .glow-blur, .glow-effect:hover .glow-line {
+    stroke-dashoffset: -65px;
+}
+
+.glow-line {
+    stroke: var(--clr-glow-line);
+    stroke-width: var(--width-glow-line);
+}
+
+.glow-blur {
+    filter: blur(var(--size-glow-blur));
+    stroke: var(--clr-glow-blur);
+    stroke-width: var(--size-glow-blur);
+}
+
+.btn-2 .glow-line {
+    stroke: var(--clr-glow-line-btn2);
+}
+
+.btn-2 .glow-blur {
+    filter: blur(var(--size-glow-blur));
+    stroke: var(--clr-glow-blur-btn2);
+}
+footer{
+    grid-area: 8 / 4 / 9 / 6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+}
+
+@media screen and (max-width: 900px) {
+    .mastercard{
+        height: calc(var(--height));
+    }
+    .card{
+        margin: 20px;
+        padding: 0px;
+
+    }
+    .card1{
+        height: calc(100% * .7);
+    }
+    .btn-1, .btn-2{
+        padding: .5em .5em;
+        margin: 5px;
+    }
+    .btn-1 {
+    grid-area: 2 / 3 / 3 / 7;
+    }
+    .btn-2 {
+    grid-area: 3 / 3 / 4 / 7;
+    }
+}

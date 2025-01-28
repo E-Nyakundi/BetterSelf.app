@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block head %}
+	<title>Betterself_HomePage</title>
+	<link rel="stylesheet" href="{% static 'Accounts/index.css' %}">
+{% endblock %}
+{% block body %}
+	<section class="mastercard">
+		<div class="card">
+			<h3>Hi There! 👋🏾</h3>
+
+			<h1>Welcome to BetterSelf</h1>
+			<div class="card1">
+				<a href="{% url 'login'%}" class="btn-1 glow-effect" > Login😎
+					<svg class="glow-container">
+						<rect class="glow-blur" pathlength="100" stroke-line-cap="round"></rect>
+						<rect class="glow-line" pathlength="100" stroke-line-cap="round"></rect>
+					</svg>
+				</a>
+				<a href="{% url 'sign-up'%}" class="btn-2 glow-effect" > 🤩Register
+					<svg class="glow-container">
+						<rect class="glow-blur" pathlength="100" stroke-line-cap="round"></rect>
+						<rect class="glow-line" pathlength="100" stroke-line-cap="round"></rect>
+					</svg>
+				</a>
+			</div>
+		</div>
+		<footer>
+			<p>©Betterself2024</p>
+		</footer>
+	</section>
+{% endblock %}
+</html>

@@ -1,0 +1,29 @@
+{% extends "tm_base.html" %}
+{% load static %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'Time_Manager/goal_form_style.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class='form'>
+    <div class='sub_form'>
+    <legend>{% block title %}Goal{% endblock %}</legend>
+    <form method="post">
+        <fieldset>
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">{% if form.instance.pk %} Update {% else %} Create {% endif %}</button> 
+        </fieldset>
+    </form>
+    
+{% block form %}
+    <form></form> 
+{% endblock %}
+</div>
+      
+    
+</div>
+{% endblock %}
+
+
