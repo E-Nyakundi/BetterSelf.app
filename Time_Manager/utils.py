@@ -34,7 +34,7 @@ def create_events_for_routine(routine):
         )
         
 def create_event_for_daily_goal(daily_goal):
-    from .models import Event, Routine, DailyGoal
+    from .models import Event, Routine, DailyGoal, DayGoal
     start_time = daily_goal.start_time
     end_time = daily_goal.end_time
     date = daily_goal.date  # Assuming date is already a DateField in DailyGoal

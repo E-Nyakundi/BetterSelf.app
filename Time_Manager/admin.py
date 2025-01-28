@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Schedule, Routine, Goals, YearlyGoal, MonthlyGoal, WeeklyGoal, DailyGoal, Event
+from .models import Schedule, Routine, Goals, YearlyGoal, MonthlyGoal, WeeklyGoal, DayGoal, DailyGoal, Event
 
 
 
@@ -23,5 +23,6 @@ admin.site.register(Goals, GoalsAdmin)
 admin.site.register(YearlyGoal)
 admin.site.register(MonthlyGoal)
 admin.site.register(WeeklyGoal)
+admin.site.register(DayGoal)
 admin.site.register(DailyGoal)
 admin.site.register(Event, EventAdmin)    

@@ -43,6 +43,34 @@ class WeeklyGoal(models.Model):
     def __str__(self):
         return self.goal
 
+class DayGoal(models.Model):
+    weekly_goal = models.ForeignKey(WeeklyGoal, related_name='day_goal', on_delete=models.CASCADE, null=True)
+    goal = models.CharField(max_length=100, null=True)
+    description = models.TextField(null=True)
+    completed = models.BooleanField(default=False)
+    date = models.DateField(null=True)
+
+    def __str__(self):
+        return self.goal
+
+class DailyGoal(models.Model):
+    day_goal = models.ForeignKey(DayGoal, related_name='daily_goals', on_delete=models.CASCADE, null=True)
+    goal = models.CharField(max_length=100, null=True)
+    description = models.TextField(null=True)
+    completed = models.BooleanField(default=False)
+    date = models.DateField(null=True)
+    start_time = models.TimeField(null=True)
+    end_time = models.TimeField(null=True)
+
+    def __str__(self):
+        return self.goal
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        create_event_for_daily_goal(self)
+
+
+
 class Routine(models.Model):
     name = models.CharField(max_length=200)
     instruction = models.TextField(blank=True)
@@ -59,24 +87,6 @@ class Routine(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         create_events_for_routine(self)
-
-
-class DailyGoal(models.Model):
-    weekly_goal = models.ForeignKey(WeeklyGoal, related_name='daily_goals', on_delete=models.CASCADE, null=True)
-    goal = models.CharField(max_length=100, null=True)
-    description = models.TextField(null=True)
-    completed = models.BooleanField(default=False)
-    date = models.DateField(null=True)
-    start_time = models.TimeField(null=True)
-    end_time = models.TimeField(null=True)
-
-    def __str__(self):
-        return self.goal
-    
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        create_event_for_daily_goal(self)
-
 
 class Schedule(models.Model):
 	pass

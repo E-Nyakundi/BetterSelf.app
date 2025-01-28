@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect, HttpResponseRedirect
 from django.views import View
-from .models import Schedule, Routine, Goals, YearlyGoal, MonthlyGoal, WeeklyGoal, DailyGoal, Event
-from .forms import RoutineForm, GoalForm, YearlyGoalForm, MonthlyGoalForm, WeeklyGoalForm, DailyGoalForm
+from .models import Schedule, Routine, Goals, YearlyGoal, MonthlyGoal, WeeklyGoal, DayGoal,DailyGoal, Event
+from .forms import RoutineForm, GoalForm, YearlyGoalForm, MonthlyGoalForm, WeeklyGoalForm, DayGoalForm, DailyGoalForm
 from django.core.serializers.json import DjangoJSONEncoder
 import json
 from django.http import JsonResponse
@@ -268,11 +268,10 @@ class WeeklyGoalView(View):
         }
         return render(request, self.template_name, context)
 
-# Daily Goal View
-class DailyGoalView(View):
-    template_name = 'Time_Manager/DailyGoals.html'
-    form_class = DailyGoalForm
-    model = DailyGoal
+class  DayGoalView(View):
+    template_name = 'Time_Manager/day_detail.html'
+    form_class = DayGoalForm
+    model = DayGoal
 
     def get(self, request, goal_id=None):
         week_id = request.GET.get('week')
@@ -281,6 +280,45 @@ class DailyGoalView(View):
             form = self.form_class(instance=goal)
         else:
             form = self.form_class(initial={'weekly_goal': week_id})
+            goal = None
+        
+        context = {
+            'form': form,
+            'goal': goal,
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request, goal_id=None):
+        logger.info("DailyGoalView POST request received")  # Log the POST request
+        if goal_id:
+            goal = get_object_or_404(self.model, id=goal_id)
+            form = self.form_class(request.POST, instance=goal)
+        else:
+            form = self.form_class(request.POST)
+        
+        if form.is_valid():
+            form.save()
+            return redirect('goals')
+        
+        context = {
+            'form': form,
+            'goal': goal,
+        }
+        return render(request, self.template_name, context)
+    
+# Daily Goal View
+class DailyGoalView(View):
+    template_name = 'Time_Manager/DailyGoals.html'
+    form_class = DailyGoalForm
+    model = DailyGoal
+
+    def get(self, request, goal_id=None):
+        day_id = request.GET.get('day')
+        if goal_id:
+            goal = get_object_or_404(self.model, id=goal_id)
+            form = self.form_class(instance=goal)
+        else:
+            form = self.form_class(initial={'day_goal': day_id})
             goal = None
         
         context = {
@@ -319,6 +357,8 @@ class DeleteGoalView(View):
             goal = get_object_or_404(MonthlyGoal, id=goal_id)
         elif goal_type == 'weekly':
             goal = get_object_or_404(WeeklyGoal, id=goal_id)
+        elif goal_type == 'day':
+            goal = get_object_or_404(DayGoal, id=goal_id)
         elif goal_type == 'daily':
             goal = get_object_or_404(DailyGoal, id=goal_id)
         else:

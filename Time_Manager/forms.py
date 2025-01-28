@@ -1,5 +1,5 @@
 from django import forms
-from .models import Routine, Goals, YearlyGoal, MonthlyGoal, WeeklyGoal, DailyGoal
+from .models import Routine, Goals, YearlyGoal, MonthlyGoal, WeeklyGoal, DayGoal, DailyGoal
 
 class RoutineForm(forms.ModelForm):
     class Meta:
@@ -38,7 +38,14 @@ class WeeklyGoalForm(forms.ModelForm):
         model = WeeklyGoal
         fields = ['goal', 'description', 'completed', 'start_date', 'end_date', 'monthly_goal']
 
+class DayGoalForm(forms.ModelForm):
+
+    class Meta:
+        model = DayGoal
+        fields = ['goal', 'description', 'date', 'completed', 'weekly_goal']
+
+
 class DailyGoalForm(forms.ModelForm):
     class Meta:
         model = DailyGoal
-        fields = ['goal', 'description', 'completed', 'date', 'start_time', 'end_time', 'weekly_goal']
+        fields = ['goal', 'description', 'completed', 'date', 'start_time', 'end_time', 'day_goal']
