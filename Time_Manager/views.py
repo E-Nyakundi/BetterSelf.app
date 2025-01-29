@@ -5,9 +5,10 @@ from .forms import RoutineForm, GoalForm, YearlyGoalForm, MonthlyGoalForm, Weekl
 from django.core.serializers.json import DjangoJSONEncoder
 import json
 from django.http import JsonResponse
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 import logging
 from django.urls import reverse
+
 
 
 logger = logging.getLogger(__name__)
@@ -18,40 +19,6 @@ def DashboardView(request):
     template_name = 'Time_Manager/tm_dashboard.html'
     return render(request, template_name)
 
-# Schedule View
-def ScheduleView(request):
-    template_name = 'Time_Manager/schedule.html'
-    events = Event.objects.all()
-    events_list = []
-
-    for event in events:
-        if event.goal:
-            goal_data = {
-                'id': event.goal.id,
-                'goal': event.goal.goal,
-                'description': event.goal.description,
-                'completed': event.goal.completed,
-                'date': event.goal.date.strftime('%Y-%m-%d') if event.goal.date else None,
-                'start_time': event.goal.start_time.strftime('%H:%M:%S') if event.goal.start_time else None,
-                'end_time': event.goal.end_time.strftime('%H:%M:%S') if event.goal.end_time else None,
-            }
-        else:
-            goal_data = None
-        
-        events_list.append({
-            'title': event.title,
-            'description': event.description,
-            'start_datetime': event.start_datetime.strftime('%Y-%m-%d %H:%M:%S'),
-            'end_datetime': event.end_datetime.strftime('%Y-%m-%d %H:%M:%S'),
-            'is_recurring': event.is_recurring,
-            'routine': event.routine.name if event.routine else None,
-            'goal': goal_data,
-        })
-
-    events_json = json.dumps(events_list, cls=DjangoJSONEncoder)
-    return render(request, template_name, {'events_json': events_json})
-
-# Routine View
 class RoutineView(View):
     template_name = 'Time_Manager/routines.html'
     model = Routine
@@ -93,6 +60,64 @@ class RoutineView(View):
             'weekend_routines': weekend_routines
         }
         return render(request, self.template_name, context)
+    
+def ScheduleView(request):
+    template_name = 'Time_Manager/schedule.html'
+
+    # Get today's date (or selected date from the request)
+    selected_date = request.GET.get('date', date.today().isoformat())
+    today = date.fromisoformat(selected_date)
+    
+    # Fetch goals for today
+    goals = DailyGoal.objects.filter(date=today)
+    
+    # Determine if today is a weekend (Saturday or Sunday)
+    is_weekend = today.weekday() >= 5  # Saturday (5) or Sunday (6)
+    
+    # Fetch routines based on whether today is a weekend
+    routines = Routine.objects.filter(is_weekend=is_weekend)
+    
+    # Combine goals and routines into a single schedule
+    schedule = []
+    
+    # Add goals to the schedule
+    for goal in goals:
+        schedule.append({
+            'start_time': goal.start_time,
+            'end_time': goal.end_time,
+            'time': f"{goal.start_time.strftime('%I:%M %p')} - {goal.end_time.strftime('%I:%M %p')}",
+            'activity': goal.goal,
+            'type': 'goal'
+        })
+    
+    # Add routines to the schedule
+    for routine in routines:
+        schedule.append({
+            'start_time': routine.start_time,
+            'end_time': routine.end_time,
+            'time': f"{routine.start_time.strftime('%I:%M %p')} - {routine.end_time.strftime('%I:%M %p')}",
+            'activity': routine.name,
+            'type': 'routine'
+        })
+    
+    # Sort the schedule by start time
+    schedule.sort(key=lambda x: x['start_time'])
+    
+    # Check for overlapping activities
+    for i in range(len(schedule) - 1):
+        current = schedule[i]
+        next_activity = schedule[i + 1]
+        
+        if current['end_time'] > next_activity['start_time']:
+            # Overlap detected
+            current['activity'] += f" (Overlaps with {next_activity['activity']})"
+    
+    # Pass the schedule to the template
+    context = {
+        'date': today.strftime('%b. %d, %Y'),  # Format date as "Jan. 29, 2025"
+        'schedule': schedule
+    }
+    return render(request, template_name, context)
 
 # Goals View
 class GoalsView(View):

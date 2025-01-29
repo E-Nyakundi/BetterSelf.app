@@ -30,13 +30,18 @@ main {
 .goal-table table {
     width: 100%;
     border-collapse: collapse;
+    table-layout: fixed; /* Ensures columns have fixed widths */
 }
 
 .goal-table th,
 .goal-table td {
+    position: relative;
     border: 1px solid #ddd;
     padding: 8px;
     text-align: left;
+    overflow: hidden; /* Prevents content from overflowing */
+    white-space: nowrap; /* Prevents text from wrapping */
+    text-overflow: ellipsis; /* Adds ellipsis for overflowed text */
 }
 
 .goal-table th {
@@ -71,6 +76,71 @@ main {
         padding: 6px;
     }
 }
- td a{
+
+/* Style for the create link */
+.create-link {
+    position: absolute;
+    right: 8px; /* Adjust based on padding */
+    top: 50%;
+    transform: translateY(-50%); /* Vertically center */
+    white-space: nowrap; /* Prevent wrapping */
+    color: #4CAF50; /* Match your link color */
+    text-decoration: none;
+}
+
+.create-link:hover {
+    color: #fff;
+    box-shadow: #4CAF50 ;
+}
+
+/* Ensure the goal name (edit link) doesn't overlap with the create link */
+.goal-table td a:not(.create-link) {
+    margin-right: 120px; /* Add space for the create link */
+    display: inline-block;
+}
+
+@media (max-width: 768px) {
+    .goal-table td a:not(.create-link) {
+        margin-right: 80px; /* Reduce space for smaller screens */
+    }
+
+    .create-link {
+        right: 4px; /* Adjust positioning for smaller screens */
+    }
+}
+
+
+/* Set fixed widths for each column */
+.goal-table th:nth-child(1),
+.goal-table td:nth-child(1) {
+    width: 17%; /* Goal */
+}
+
+.goal-table th:nth-child(2),
+.goal-table td:nth-child(2) {
+    width: 17%; /* Yearly Goal */
+}
+
+.goal-table th:nth-child(3),
+.goal-table td:nth-child(3) {
+    width: 16%; /* Monthly Goal */
+}
+
+.goal-table th:nth-child(4),
+.goal-table td:nth-child(4) {
+    width: 16%; /* Weekly Goal */
+}
+
+.goal-table th:nth-child(5),
+.goal-table td:nth-child(5) {
+    width: 17%; /* Daily Goal */
+}
+
+.goal-table th:nth-child(6),
+.goal-table td:nth-child(6) {
+    width: 17%; /* Tasks */
+}
+
+td a {
     color: #000;
- }
+}
