@@ -10,7 +10,7 @@ class RoutineAdmin(admin.ModelAdmin):
     list_display = ['name', 'start_time', 'end_time']
     
 class GoalsAdmin(admin.ModelAdmin):
-    list_display = ['name', 'description']
+    list_display = ['name', 'description', 'user']
     
 class EventAdmin(admin.ModelAdmin):
     list_display = ('title', 'start_datetime', 'end_datetime', 'is_recurring')

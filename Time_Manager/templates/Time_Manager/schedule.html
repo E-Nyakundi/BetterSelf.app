@@ -3,21 +3,22 @@
 
 {% block head %}
 <link rel="stylesheet" href="{% static 'tm_base.css' %}">
-<link rel="stylesheet" href="{% static 'Time_Manager/schedule.css' %}">
+<link rel="stylesheet" href="{% static 'schedule.css' %}">
 {% endblock %}
 
 {% block title %}Daily Schedule{% endblock %}
 
 {% block content %}
-    <h1>Schedule for {{ date }}</h1>
-    
-    <!-- Date Picker -->
-    <form method="GET" action="{% url 'scheduller' %}" class="mb-4">
-        <label for="date" class="form-label">Select Date:</label>
-        <input type="date" id="date" name="date" value="{{ date|date:'Y-m-d' }}" class="form-control">
-        <button type="submit" class="btn btn-primary mt-2">View Schedule</button>
-    </form>
-
+    <div class="head">
+        <h1>Schedule for {{day}}, {{ date }}</h1>
+        
+        <!-- Date Picker -->
+        <form method="GET" action="{% url 'scheduller' %}" class="mb-4">
+            <label for="date" class="form-label">Select Date:</label>
+            <input type="date" id="date" name="date" value="{{ date|date:'Y-m-d' }}" class="form-control">
+            <button type="submit" class="btn btn-primary mt-2">View Schedule</button>
+        </form>
+    </div>
     <!-- Schedule Table -->
     <table class="table table-bordered table-striped">
         <thead class="table-dark">

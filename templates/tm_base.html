@@ -24,7 +24,19 @@
                 </ul>
                 <ul class="sub_nav">
                     <li><a href="{% url 'tm_dashboard' %}"><img class="bell2" src="{% static '/bell2.1.png' %}"></a></li>
-                    <li><a href="{% url 'tm_dashboard' %}"><img class="profile1" src="{% static '/profile1.1.png' %}"></a></li>
+                    {% if request.user.is_authenticated %}
+                        <li><a href="{% url 'edit_profile' %}">
+                            {% if request.user.profile.profile_img %}
+                                <img class="profile1" src="{{ request.user.profile.profile_img.url }}" alt="{{ request.user.username }}'s profile image">
+                            {% else %}
+                                <img class="profile1" src="{% static 'profile1.1.png' %}" alt="Default profile image">
+                            {% endif %}
+                        </a></li>
+                    {% else %}
+                        <li><a href="{% url 'login' %}">
+                            <img class="profile1" src="{% static 'profile1.1.png' %}" alt="Default profile image">
+                        </a></li>
+                    {% endif %}
                 </ul>
             </nav>
             <nav class="tm-nav">
@@ -32,6 +44,7 @@
                     <li><a href="{% url 'scheduller' %}">Schedule</a></li>
                     <li><a href="{% url 'routine' %}">Routines</a></li>
                     <li><a href="{% url 'goals' %}">Goals</a></li>
+                    <li><a href="{% url 'add_event' %}">Events</a></li>
                 </ul>
             </nav>
         {% endblock %}

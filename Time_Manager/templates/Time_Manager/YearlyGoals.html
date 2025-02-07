@@ -5,7 +5,7 @@
 {% block form %}
     <!-- Only show the delete button if we're editing an existing goal -->
     {% if goal %}
-        <form method="POST" action="{% url 'delete_goal' 'yeakly' goal.id %}">
+        <form method="POST" action="{% url 'delete_goal' 'yearly' goal.id %}">
             {% csrf_token %}
             <button type="submit" class="btn btn-danger">Delete</button>
         </form>

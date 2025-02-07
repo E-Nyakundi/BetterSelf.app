@@ -1,14 +1,14 @@
 from django.shortcuts import render, get_object_or_404, redirect, HttpResponseRedirect
 from django.views import View
 from .models import Schedule, Routine, Goals, YearlyGoal, MonthlyGoal, WeeklyGoal, DayGoal,DailyGoal, Event
-from .forms import RoutineForm, GoalForm, YearlyGoalForm, MonthlyGoalForm, WeeklyGoalForm, DayGoalForm, DailyGoalForm
+from .forms import RoutineForm, GoalForm, YearlyGoalForm, MonthlyGoalForm, WeeklyGoalForm, DayGoalForm, DailyGoalForm, EventForm
 from django.core.serializers.json import DjangoJSONEncoder
 import json
 from django.http import JsonResponse
 from datetime import date, timedelta, datetime
 import logging
 from django.urls import reverse
-
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 
 logger = logging.getLogger(__name__)
@@ -28,13 +28,15 @@ class RoutineView(View):
             routine = get_object_or_404(Routine, id=routine_id)
             form = RoutineForm(instance=routine)
         else:
+            routine = None  # This handles the case when there is no specific routine to edit
             form = RoutineForm()
-        
+
         routines = Routine.objects.filter(is_weekend=False)
         weekend_routines = Routine.objects.filter(is_weekend=True)
-        
+
         context = {
             'form': form,
+            'routine': routine,  # Add the routine to the context
             'routines': routines,
             'weekend_routines': weekend_routines
         }
@@ -46,22 +48,30 @@ class RoutineView(View):
             form = RoutineForm(request.POST, instance=routine)
         else:
             form = RoutineForm(request.POST)
-        
+
         if form.is_valid():
             form.save()
             return redirect('routine')
-        
+
         routines = Routine.objects.filter(is_weekend=False)
         weekend_routines = Routine.objects.filter(is_weekend=True)
-        
+
         context = {
             'form': form,
+            'routine': routine,  # Add the routine to the context
             'routines': routines,
             'weekend_routines': weekend_routines
         }
         return render(request, self.template_name, context)
+
+class DeleteRoutineView(View):
+    def post(self, request, routine_id):
+        routine = get_object_or_404(Routine, id=routine_id)
+        routine.delete()  # Delete the routine
+        return redirect('routine')  # Redirect back to the list of routines
     
 def ScheduleView(request):
+    model = Schedule
     template_name = 'Time_Manager/schedule.html'
 
     # Get today's date (or selected date from the request)
@@ -112,42 +122,57 @@ def ScheduleView(request):
             # Overlap detected
             current['activity'] += f" (Overlaps with {next_activity['activity']})"
     
+    # Get the day's name (e.g., Monday, Tuesday)
+    day_name = today.strftime('%A')  # Full day name
+    
     # Pass the schedule to the template
     context = {
+        'day': day_name,  # Add the day's name
         'date': today.strftime('%b. %d, %Y'),  # Format date as "Jan. 29, 2025"
         'schedule': schedule
     }
     return render(request, template_name, context)
-
 # Goals View
-class GoalsView(View):
+
+class GoalsView(LoginRequiredMixin, View):
     template_name = 'Time_Manager/Goals.html'
     form_class = GoalForm
+    model = Goals
 
     def get(self, request, goal_id=None):
+        # If editing a goal, ensure it belongs to the current user.
         if goal_id:
-            goal = get_object_or_404(Goals, id=goal_id)
+            goal = get_object_or_404(Goals, id=goal_id, user=request.user)
             form = self.form_class(instance=goal)
         else:
             form = self.form_class()
-        goals = Goals.objects.all()
+
+        # Retrieve only the logged in user's goals.
+        goals = Goals.objects.filter(user=request.user)
         context = {'form': form, 'goals': goals}
         return render(request, self.template_name, context)
 
     def post(self, request, goal_id=None):
+        # If editing, retrieve the goal ensuring it belongs to the user.
         if goal_id:
-            goal = get_object_or_404(Goals, id=goal_id)
+            goal = get_object_or_404(Goals, id=goal_id, user=request.user)
             form = self.form_class(request.POST, instance=goal)
         else:
             form = self.form_class(request.POST)
 
         if form.is_valid():
-            form.save()
-            return redirect('goals')
+            # For new goals, attach the current user before saving.
+            goal_obj = form.save(commit=False)
+            if not goal_id:
+                goal_obj.user = request.user
+            goal_obj.save()
+            return redirect('goals')  # Ensure your URL name 'goals' is correctly set up.
 
-        goals = Goals.objects.all()
+        # Retrieve the current user's goals for the context.
+        goals = Goals.objects.filter(user=request.user)
         context = {'form': form, 'goals': goals}
         return render(request, self.template_name, context)
+
 
 # Create and Edit Goals View
 class CreateGoalsView(View):
@@ -340,15 +365,17 @@ class DailyGoalView(View):
     def get(self, request, goal_id=None):
         day_id = request.GET.get('day')
         if goal_id:
+            # Retrieve a specific goal by ID
             goal = get_object_or_404(self.model, id=goal_id)
             form = self.form_class(instance=goal)
         else:
-            form = self.form_class(initial={'day_goal': day_id})
+            # Retrieve all goals related to the specific DayGoal, ordered by start_time
             goal = None
-        
+            form = self.form_class(initial={'day_goal': day_id})
+
         context = {
             'form': form,
-            'goal': goal,
+            'goal': goal
         }
         return render(request, self.template_name, context)
 
@@ -363,14 +390,16 @@ class DailyGoalView(View):
         if form.is_valid():
             form.save()
             return redirect('goals')
-        
+
         context = {
             'form': form,
-            'goal': goal,
+            'goal': goal if goal_id else None,
         }
         return render(request, self.template_name, context)
 
+
 # Delete Goal View
+
 class DeleteGoalView(View):
     def post(self, request, goal_type, goal_id):
         logger.info(f"DeleteGoalView POST request received. Goal Type: {goal_type}, Goal ID: {goal_id}")  # Log the request
@@ -382,7 +411,7 @@ class DeleteGoalView(View):
             goal = get_object_or_404(MonthlyGoal, id=goal_id)
         elif goal_type == 'weekly':
             goal = get_object_or_404(WeeklyGoal, id=goal_id)
-        elif goal_type == 'day':
+        elif goal_type == 'days':
             goal = get_object_or_404(DayGoal, id=goal_id)
         elif goal_type == 'daily':
             goal = get_object_or_404(DailyGoal, id=goal_id)
@@ -395,10 +424,26 @@ class DeleteGoalView(View):
         logger.info(f"Goal deleted successfully: {goal}")  # Log successful deletion
         return redirect('goals')
     
+
+class EventsView(View):
+    def get(self, request, *args, **kwargs):
+        form = EventForm()
+        return render(request, 'events/add_event.html', {'form': form})
+
+    def post(self, request, *args, **kwargs):
+        form = EventForm(request.POST)
+        if form.is_valid():
+            event = form.save(commit=False)
+            event.user = request.user
+            event.save()
+            return redirect('events:event_list')  # Update with your actual redirect name
+        return render(request, 'events/add_event.html', {'form': form})
+    
 def get_events(request):
-    # Fetch all daily goals and routines
+    # Fetch all daily goals and routines and events
     daily_goals = DailyGoal.objects.all()
     routines = Routine.objects.all()
+    events = Event.objects.all()
 
     # Process daily goals
     goals = [

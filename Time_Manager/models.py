@@ -1,8 +1,11 @@
 from django.db import models
 from .utils import create_events_for_routine, create_event_for_daily_goal
+from django.conf import settings
+
 # Create your models here.
 
 class Goals(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='goals', null=True, blank=True)
     name = models.CharField(max_length=100)
     description = models.TextField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -72,11 +75,13 @@ class DailyGoal(models.Model):
 
 
 class Routine(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='routines', null=True, blank=True)
     name = models.CharField(max_length=200)
     instruction = models.TextField(blank=True)
     start_time = models.TimeField(default='00:00:00')
     end_time = models.TimeField(default='00:00:00')
     is_weekend = models.BooleanField(default=False)
+    days_of_week = models.JSONField(default=list)  # New field to store specific days (0=Monday, 6=Sunday)
     
     def __str__(self):
         return f"{self.name} ({self.start_time} - {self.end_time})"
@@ -88,15 +93,22 @@ class Routine(models.Model):
         super().save(*args, **kwargs)
         create_events_for_routine(self)
 
+
 class Schedule(models.Model):
-	pass
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='schedule', null=True, blank=True)
+    activity = models.CharField(max_length=200, blank=True, null=True)
+    start_time = models.TimeField(default='00:00:00')
+    end_time = models.TimeField(default='00:00:00')
 
 
 class Event(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='events', null=True, blank=True)
     title = models.CharField(max_length=100)
     description = models.TextField(null=True)
     start_datetime = models.DateTimeField()
+    start_time = models.TimeField(default='00:00:00')
     end_datetime = models.DateTimeField()
+    end_time = models.TimeField(default='00:00:00')
     is_recurring = models.BooleanField(default=False)
     routine = models.ForeignKey(Routine, related_name='events', on_delete=models.SET_NULL, null=True, blank=True)
     goal = models.ForeignKey(DailyGoal, related_name='events', on_delete=models.SET_NULL, null=True, blank=True)

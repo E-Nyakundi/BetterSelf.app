@@ -3,8 +3,8 @@ from django.utils.dateparse import parse_datetime
 from django.utils import timezone
 
 def create_events_for_routine(routine):
-    from .models import Event, Routine
-    days = [0, 1, 2, 3, 4]  # Weekdays (Monday=0, Friday=4) by default
+    from .models import Event
+    days = [0, 1, 2, 3, 4]  # Weekdays by default
     if routine.is_weekend:
         days = [5, 6]  # Saturday and Sunday
 
@@ -12,17 +12,20 @@ def create_events_for_routine(routine):
         today = datetime.today()
         next_date = today + timedelta((day - today.weekday()) % 7)
 
-        start_datetime_str = routine.start_time.isoformat()  # Assuming routine.start_time is a datetime.time object
-        end_datetime_str = routine.end_time.isoformat()  # Assuming routine.end_time is a datetime.time object
+        # Ensure start_time and end_time are datetime.time objects
+        if isinstance(routine.start_time, str):
+            start_time = datetime.strptime(routine.start_time, "%H:%M:%S").time()
+        else:
+            start_time = routine.start_time
 
-        start_datetime = parse_datetime(start_datetime_str)
-        end_datetime = parse_datetime(end_datetime_str)
-        
-        if not start_datetime:
-            start_datetime = timezone.make_aware(datetime.combine(next_date, routine.start_time))
+        if isinstance(routine.end_time, str):
+            end_time = datetime.strptime(routine.end_time, "%H:%M:%S").time()
+        else:
+            end_time = routine.end_time
 
-        if not end_datetime:
-            end_datetime = timezone.make_aware(datetime.combine(next_date, routine.end_time))
+        # Combine the date and time correctly
+        start_datetime = timezone.make_aware(datetime.combine(next_date, start_time))
+        end_datetime = timezone.make_aware(datetime.combine(next_date, end_time))
 
         event = Event.objects.create(
             title=routine.name,

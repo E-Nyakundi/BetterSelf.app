@@ -1,3 +1,13 @@
+from django.contrib.auth.models import User
 from django.db import models
 
-# Create your models here.
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    # The uploaded images will be stored in MEDIA_ROOT/profiles/
+    profile_img = models.ImageField(upload_to="profiles/", blank=True, null=True)
+    email = models.EmailField()
+    title = models.CharField(max_length=200)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.user.username

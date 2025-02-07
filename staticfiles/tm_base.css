@@ -1,0 +1,87 @@
+* {
+    --width: 100vw;
+    --height: 100vh;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: serif;
+}
+
+/* Set body font */
+body {
+    font-family: Arial, sans-serif;
+}
+
+header {
+    position: relative;
+    top: 0;
+    /*left: 0;*/
+    width: 100%;
+    z-index: 1000; /* Ensures it's above other elements */
+}
+
+main {
+    padding-top: 30px; /* Adjust to match the header's height */
+}
+
+.main-nav{
+    background: #101010;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 15px;
+}
+ul{
+    display: inline;
+}
+
+.main-nav li{
+    margin: 5 20px;
+    display: inline-block;
+}
+.sub_nav{
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin: 10px;
+}
+.sub_nav li{
+    margin: 0;
+}
+
+/* Bell icon styling */
+.bell2 {
+    width: 35px; /* Adjust the size for the bell icon */
+    height: 35px; /* Maintain aspect ratio */
+    object-fit: contain; /* Ensure proper scaling and no cropping */
+    margin-right: 5px; /* Add spacing to the right */
+    display: inline-block; /* Align with other nav items */
+}
+
+/* Profile image styling */
+.profile1 {
+    width: 35px; /* Adjust the size for the profile image */
+    height: 35px; /* Maintain aspect ratio */
+    border-radius: 50%; /* Make the image circular */
+    object-fit: cover; /* Ensure proper scaling and cropping */
+    margin-left: 10px; /* Add spacing to the left */
+    display: inline-block; /* Align with other nav items */
+}
+
+
+a{
+    text-decoration: none;
+    color: #FFF;
+}
+
+.tm-nav{
+    display: grid;
+    justify-content: center;
+    text-align: center;
+}
+.tm-nav li{
+    margin: 5 50px;
+    display: inline-block;
+}
+.tm-nav li a{
+    font-size: 20px;
+}

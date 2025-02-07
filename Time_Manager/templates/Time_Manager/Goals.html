@@ -3,7 +3,7 @@
 
 {% block head %}
 <link rel="stylesheet" href="{% static 'tm_base.css' %}">
-<link rel="stylesheet" href="{% static 'Time_Manager/goals.css' %}">
+<link rel="stylesheet" href="{% static 'goals.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -21,7 +21,7 @@
         </thead>
         <tbody>
             {% if goals %}
-                {% for goal in goals %}
+                {% for goal in goals|dictsort:"start_year" %}
                     <tr>
                         <td>
                             <a href="{% url 'edit_goal' goal.id %}" aria-label="Edit {{ goal.name }}">{{ goal.name }}</a>
@@ -29,7 +29,7 @@
                         </td>
                         <td colspan="5"></td>
                     </tr>
-                    {% for yearly_goal in goal.yearly_goals.all %}
+                    {% for yearly_goal in goal.yearly_goals.all|dictsort:"year" %}
                         <tr>
                             <td></td>
                             <td>
@@ -38,7 +38,7 @@
                             </td>
                             <td colspan="4"></td>
                         </tr>
-                        {% for monthly_goal in yearly_goal.monthly_goals.all %}
+                        {% for monthly_goal in yearly_goal.monthly_goals.all|dictsort:"month" %}
                             <tr>
                                 <td></td>
                                 <td></td>
@@ -48,7 +48,7 @@
                                 </td>
                                 <td colspan="3"></td>
                             </tr>
-                            {% for weekly_goal in monthly_goal.weekly_goals.all %}
+                            {% for weekly_goal in monthly_goal.weekly_goals.all|dictsort:"start_date" %}
                                 <tr>
                                     <td></td>
                                     <td></td>
@@ -59,7 +59,7 @@
                                     </td>
                                     <td colspan="2"></td>
                                 </tr>
-                                {% for day_goal in weekly_goal.day_goal.all %}
+                                {% for day_goal in weekly_goal.day_goal.all|dictsort:"date" %}
                                     <tr>
                                         <td></td>
                                         <td></td>
@@ -67,11 +67,11 @@
                                         <td></td>
                                         <td>
                                             <a href="{% url 'edit_day_goal' day_goal.id %}" aria-label="Edit {{ day_goal.goal }}">{{ day_goal.goal }}</a>
-                                            <a href="{% url 'create_daily_goal' %}?week={{ day_goal.id }}" class="create-link">+ Create Daily Goal</a>
+                                            <a href="{% url 'create_daily_goal' %}?day={{ day_goal.id }}" class="create-link">+ Create Daily Goal</a>
                                         </td>
                                         <td></td>
                                     </tr>
-                                    {% for daily_goal in day_goal.daily_goals.all %}
+                                    {% for daily_goal in day_goal.daily_goals.all|dictsort:"start_time" %}
                                         <tr>
                                             <td></td>
                                             <td></td>

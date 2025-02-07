@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 {% load static %}
+{% load socialaccount %}
 <html>
     
 <head>
 	<title>Login</title>
-	<link rel="stylesheet" href="{% static 'Accounts/login.css' %}" >
+	<link rel="stylesheet" href="{% static 'login.css' %}" >
 
 </head>
 <body>
@@ -22,6 +23,7 @@
         {% if error %}
             <div class="alert alert-danger mt-3">{{ error }}</div>
         {% endif %}
+		<a href="{% provider_login_url 'google' %}">Sign in with google</a>
 	</div>
 </body>
 

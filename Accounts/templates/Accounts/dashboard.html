@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 {% load static %}
+{% load socialaccount %}
 
 {% block head %}
-    <link rel="stylesheet" href="{% static 'Accounts/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'dashboard.css' %}">
     <link rel="stylesheet" href="{% static '/tm_base.css' %}">
     {% block title %}Dashboard{% endblock %}
 {% endblock %}

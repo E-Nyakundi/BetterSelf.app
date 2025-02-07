@@ -1,0 +1,97 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    color: #000;
+}
+body {
+    position: relative;
+    background: url("workstation.jpg");
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    font-family: Arial, sans-serif;
+    color: #333;
+}
+
+.tm-nav{
+    background: #ffffffad;
+}
+
+.tm-nav a {
+    color: #000;
+    text-decoration: none;
+}
+
+main{
+    padding: 0;
+}
+
+.form{
+    display: grid;
+    justify-content: center;
+    margin: 5em 1em 0;
+    padding: 2em;
+}
+
+.sub_form {
+    background: rgba(255, 174, 174, 0.25);
+    padding: 5em;
+    border-radius: 25px;
+    box-shadow: 
+        inset 0px 0px 10px 5px rgba(255, 0, 0, 50%), /* Inner shadow to sit on the border */
+        0px 0px 100px rgba(255, 0, 0, 1);         /* Outer shadow for the glow */
+}
+
+
+fieldset{
+    
+    background: #FFF;
+    margin: 1em 0;
+    padding: 2.5em;
+    border: 0;
+    border-radius: 25px;
+    min-width: 200px;
+    box-shadow: rgba(255, 255, 255) 0px 0px 50px;
+}
+
+legend{
+    text-align: center;
+    font-size: 1.5em;
+    font: Bold;
+    padding: 0 .25em;
+    color: #000;
+}
+p{
+    margin: .5em 0em;
+}
+label{
+    margin-right: 1em;
+}
+input{
+    padding: 2.5px;
+}
+textarea{
+    display: block;
+    padding: 5px;
+}
+
+button{
+    background: #37ad00;
+    color: #ffffff;
+    padding: .25em;
+    border: 0;
+    border-radius: 3px;
+}
+
+button.btn.btn-danger{
+    background: #ff0000;
+    color: #FFF;
+    padding: .25em;
+    border: 0;
+    border-radius: 3px;
+}
+
+button:hover{
+
+}

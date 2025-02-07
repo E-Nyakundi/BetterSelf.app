@@ -1,7 +1,7 @@
 from django.urls import path
 from . import views
 from .views import (
-    RoutineView, GoalsView, YearlyGoalView, MonthlyGoalView, WeeklyGoalView, DayGoalView, DailyGoalView, DeleteGoalView
+    RoutineView, GoalsView, YearlyGoalView, MonthlyGoalView, WeeklyGoalView, DayGoalView, DailyGoalView, DeleteGoalView, DeleteRoutineView, EventsView
 )
 
 urlpatterns = [
@@ -24,4 +24,6 @@ urlpatterns = [
     path('goals/daily/create/', DailyGoalView.as_view(), name='create_daily_goal'),
     path('goals/daily/edit/<int:goal_id>/', DailyGoalView.as_view(), name='edit_daily_goal'),
     path('goals/delete/<str:goal_type>/<int:goal_id>/', DeleteGoalView.as_view(), name='delete_goal'),
+    path('routines/delete/<int:routine_id>/', DeleteRoutineView.as_view(), name='delete_routine'),
+    path('add/', EventsView.as_view(), name='add_event'),
 ]

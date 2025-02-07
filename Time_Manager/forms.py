@@ -1,10 +1,17 @@
 from django import forms
-from .models import Routine, Goals, YearlyGoal, MonthlyGoal, WeeklyGoal, DayGoal, DailyGoal
+from .models import Routine, Goals, YearlyGoal, MonthlyGoal, WeeklyGoal, DayGoal, DailyGoal, Event
 
 class RoutineForm(forms.ModelForm):
     class Meta:
         model = Routine
-        fields = ['name', 'instruction', 'start_time', 'end_time', 'is_weekend']
+        fields = ['name', 'instruction', 'start_time', 'end_time', 'is_weekend', 'days_of_week']
+    
+    days_of_week = forms.MultipleChoiceField(
+        choices=[(i, day) for i, day in enumerate(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])],
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+    )
+
 
 class GoalForm(forms.ModelForm):
     class Meta:
@@ -49,3 +56,15 @@ class DailyGoalForm(forms.ModelForm):
     class Meta:
         model = DailyGoal
         fields = ['goal', 'description', 'completed', 'date', 'start_time', 'end_time', 'day_goal']
+
+
+class EventForm(forms.ModelForm):
+    class Meta:
+        model = Event
+        exclude = ['user']
+        widgets = {
+            'start_datetime': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'end_datetime': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'start_time': forms.TimeInput(attrs={'type': 'time'}),
+            'end_time': forms.TimeInput(attrs={'type': 'time'}),
+        }
