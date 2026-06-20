@@ -1,10 +1,50 @@
 {% extends "base.html" %}
 {% load static %}
+
+{% block title %}Edit Profile{% endblock %}
+{% block page_title %}Edit profile{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'edit_profile.css' %}">
+{% endblock %}
+
 {% block content %}
-<h2>Edit Profile</h2>
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Upload</button>
-</form>
+<div class="profile-page">
+    <div class="profile-panel">
+        <div class="profile-preview">
+            {% if profile.profile_img %}
+                <img src="{{ profile.profile_img.url }}" alt="{{ request.user.username }}'s profile image">
+            {% else %}
+                <img src="{% static 'profile1.1.png' %}" alt="Default profile image">
+            {% endif %}
+            <div>
+                <h2>Edit Profile</h2>
+                <p>{{ request.user.username }}</p>
+            </div>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="profile-form">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="form-errors">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            {% for field in form %}
+                <div class="form-field">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                    {% for error in field.errors %}
+                        <span class="field-error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+
+            <div class="form-actions">
+                <button type="submit" class="bs-btn bs-btn--primary">Save profile</button>
+                <a href="{% url 'dashboard' %}" class="bs-btn bs-btn--secondary">Back</a>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}

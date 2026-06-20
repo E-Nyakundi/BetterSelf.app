@@ -7,7 +7,9 @@
     font-family: serif;
 }
 
+
 /* Set body font */
+
 body {
     font-family: Arial, sans-serif;
 }
@@ -17,71 +19,194 @@ header {
     top: 0;
     /*left: 0;*/
     width: 100%;
-    z-index: 1000; /* Ensures it's above other elements */
+    z-index: 1000;
+    /* Ensures it's above other elements */
 }
 
 main {
-    padding-top: 30px; /* Adjust to match the header's height */
+    margin: .25em;
+    justify-items: center;
+    /* Adjust to match the header's height */
 }
 
-.main-nav{
+main .main {
+    display: grid;
+    align-items: center;
+    justify-items: center;
+}
+
+.main-nav {
     background: #101010;
     font-size: 16px;
     font-weight: bold;
-    padding: 15px;
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 16px;
 }
-ul{
+
+.main-nav ul {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 18px;
+    list-style: none;
+}
+
+ul {
     display: inline;
 }
 
-.main-nav li{
-    margin: 5 20px;
+.main-nav li {
     display: inline-block;
 }
-.sub_nav{
-    position: absolute;
-    top: 0;
-    right: 0;
-    margin: 10px;
+
+.main-nav li a {
+    display: inline-block;
+    padding: 6px 2px;
 }
-.sub_nav li{
+
+.sub_nav {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     margin: 0;
 }
 
-/* Bell icon styling */
-.bell2 {
-    width: 35px; /* Adjust the size for the bell icon */
-    height: 35px; /* Maintain aspect ratio */
-    object-fit: contain; /* Ensure proper scaling and no cropping */
-    margin-right: 5px; /* Add spacing to the right */
-    display: inline-block; /* Align with other nav items */
+.sub_nav li {
+    margin: 0;
 }
+
+
+/* Bell icon styling */
+
+.bell2 {
+    width: 35px;
+    /* Adjust the size for the bell icon */
+    height: 35px;
+    /* Maintain aspect ratio */
+    object-fit: contain;
+    /* Ensure proper scaling and no cropping */
+    margin-right: 5px;
+    /* Add spacing to the right */
+    display: inline-block;
+    /* Align with other nav items */
+}
+
 
 /* Profile image styling */
+
 .profile1 {
-    width: 35px; /* Adjust the size for the profile image */
-    height: 35px; /* Maintain aspect ratio */
-    border-radius: 50%; /* Make the image circular */
-    object-fit: cover; /* Ensure proper scaling and cropping */
-    margin-left: 10px; /* Add spacing to the left */
-    display: inline-block; /* Align with other nav items */
+    width: 35px;
+    /* Adjust the size for the profile image */
+    height: 35px;
+    /* Maintain aspect ratio */
+    border-radius: 50%;
+    /* Make the image circular */
+    object-fit: cover;
+    /* Ensure proper scaling and cropping */
+    margin-left: 10px;
+    /* Add spacing to the left */
+    display: inline-block;
+    /* Align with other nav items */
 }
 
-
-a{
+a {
     text-decoration: none;
     color: #FFF;
 }
 
-.tm-nav{
-    display: grid;
+.tm-nav {
+    display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     text-align: center;
+    padding: 6px 10px;
 }
-.tm-nav li{
-    margin: 5 50px;
+
+.tm-nav ul {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px 18px;
+    list-style: none;
+}
+
+.tm-nav li {
     display: inline-block;
 }
-.tm-nav li a{
+
+.tm-nav li a {
     font-size: 20px;
+    display: inline-block;
+    padding: 8px 4px;
+}
+
+.logins a {
+    color: #000;
+}
+
+.messages {
+    width: min(960px, calc(100vw - 32px));
+    margin: 16px auto;
+}
+
+.messages p {
+    padding: 10px 12px;
+    border-radius: 6px;
+    background: #eef6ff;
+    color: #1f2933;
+    font-weight: 700;
+}
+
+@media screen and (max-width:900px) {
+    .main-nav {
+        background: #101010;
+        font-size: .85em;
+        justify-content: center;
+    }
+    .main-nav ul {
+        justify-content: center;
+        gap: 4px 12px;
+    }
+    .main-nav li a {
+        color: #FFF;
+    }
+    .tm-nav li {
+        margin: 0;
+    }
+    .tm-nav li a {
+        color: #000;
+        font-size: 17px;
+    }
+}
+
+@media screen and (max-width:650px) {
+    .main-nav {
+        font-size: .8em;
+        padding: 8px 10px;
+    }
+    .main-nav ul {
+        gap: 4px 10px;
+    }
+    .tm-nav li a {
+        font-size: 15px;
+        padding: 8px 6px;
+    }
+    .bell2,
+    .profile1 {
+        width: 26px;
+        height: 26px;
+    }
+}
+
+@media screen and (max-width:420px) {
+    .main-nav ul {
+        gap: 4px 8px;
+    }
+    .main-nav li a {
+        font-size: 0.85em;
+    }
 }

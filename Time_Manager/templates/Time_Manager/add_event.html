@@ -1,41 +1,57 @@
-{% extends 'base.html' %}
+{% extends 'tm_base.html' %}
+{% load static %}
+
+{% block title %}New Event{% endblock %}
+{% block page_title %}New Event{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'goal_form_style.css' %}">
+{% endblock %}
 
 {% block content %}
-<div class="event-form">
-    <h2>Create New Event</h2>
-    <form method="post">
-        {% csrf_token %}
-        <div class="form-group">
-            {{ form.title.label_tag }}
-            {{ form.title }}
-        </div>
-        <div class="form-group">
-            {{ form.description.label_tag }}
-            {{ form.description }}
-        </div>
-        <div class="datetime-group">
+<div class="bs-page-header">
+    <div>
+        <span class="bs-eyebrow">Schedule</span>
+        <h1>Create event</h1>
+        <p>One-off or recurring — link it to a routine or goal if it belongs to one.</p>
+    </div>
+</div>
+<div class="form">
+    <div class="sub_form">
+        <form method="post">
+            {% csrf_token %}
             <div class="form-group">
-                {{ form.start_datetime.label_tag }}
-                {{ form.start_datetime }}
+                {{ form.title.label_tag }}
+                {{ form.title }}
             </div>
             <div class="form-group">
-                {{ form.end_datetime.label_tag }}
-                {{ form.end_datetime }}
+                {{ form.description.label_tag }}
+                {{ form.description }}
             </div>
-        </div>
-        <div class="form-group">
-            {{ form.is_recurring.label_tag }}
-            {{ form.is_recurring }}
-        </div>
-        <div class="form-group">
-            {{ form.routine.label_tag }}
-            {{ form.routine }}
-        </div>
-        <div class="form-group">
-            {{ form.goal.label_tag }}
-            {{ form.goal }}
-        </div>
-        <button type="submit" class="btn btn-primary">Save Event</button>
-    </form>
+            <div class="datetime-group">
+                <div class="form-group">
+                    {{ form.start_datetime.label_tag }}
+                    {{ form.start_datetime }}
+                </div>
+                <div class="form-group">
+                    {{ form.end_datetime.label_tag }}
+                    {{ form.end_datetime }}
+                </div>
+            </div>
+            <div class="form-group form-group--checkbox">
+                {{ form.is_recurring }}
+                {{ form.is_recurring.label_tag }}
+            </div>
+            <div class="form-group">
+                {{ form.routine.label_tag }}
+                {{ form.routine }}
+            </div>
+            <div class="form-group">
+                {{ form.goal.label_tag }}
+                {{ form.goal }}
+            </div>
+            <button type="submit" class="bs-btn bs-btn--primary">Save event</button>
+        </form>
+    </div>
 </div>
 {% endblock %}

@@ -7,7 +7,6 @@ from .views import (
 urlpatterns = [
     path('schedule/events/', views.get_events, name='get-events'),
     path("schedule/", views.ScheduleView, name="scheduller"),
-    path("dashboard/", views.DashboardView, name="tm_dashboard"),
     path('routines/', RoutineView.as_view(), name='routine'),
     path('routines/<int:routine_id>/', RoutineView.as_view(), name='edit_routine'),
     path('goals/', GoalsView.as_view(), name='goals'),

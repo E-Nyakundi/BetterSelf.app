@@ -1,4 +1,5 @@
 /* Set root variables for width and height */
+
 * {
     --width: 100vw;
     --height: 100vh;
@@ -6,71 +7,86 @@
     padding: 0;
 }
 
+
 /* Set body font */
+
 body {
     font-family: Arial, sans-serif;
+    background-image: url("\index2.jpg");
+    background-size: cover;
+    /* Ensures the image covers the entire container */
+    background-position: center center;
+    /* Keeps the background centered */
+    background-repeat: no-repeat;
+    /* Prevents the image from repeating */
 }
 
+
 /* Create a grid layout with 3x3 cells */
+
 .main-div {
     width: var(--width);
-    height: var(--height);
+    min-height: var(--height);
     display: grid;
     align-items: center;
+    justify-items: center;
     justify-content: center;
     grid-template-rows: repeat(6, 1fr);
     grid-template-columns: repeat(6, 1fr);
+    padding: 24px 0;
 }
 
+
 /* Style the form element */
+
 form {
-    grid-area: 2 / 2 / 6 / 6; /* Position form in the center cell */
-    background: #ffdcdc;
+    grid-area: 3 / 2 / 5 / 6;
+    /* Position form in the center cell */
+    background: #ffdcdc79;
     border-radius: 30px;
-    box-shadow: 10px 30px 100px #ffd7d7;
-    margin: 10px;
-    padding: 25px 35px;
+    box-shadow: 10px 30px 100px #ffd7d770;
+    margin: 1.25em;
+    padding: 2.5em;
     display: grid;
-    grid-template-rows: repeat(6, 1fr);
-    grid-template-columns: repeat(4, 1fr);
     justify-items: center;
+    justify-content: center;
     align-items: center;
-    font-family: sans-serif;
-    font-size: 24px;
+    /* Center items vertically */
+    font-family: serif;
+    font-size: 1em;
     position: relative;
 }
 
 .form-fields {
-    grid-area: 1/2/6/4;
     display: grid;
-    align-items: center;
-    grid-template-columns: 1fr 2fr;
-    grid-column: 1 / 5;
+    position: relative;
+    margin: 1.5em;
+    top: 0;
 }
 
-.form-fields .label {
-    text-align: right;
-    padding-right: 10px;
-}
-
-.button{
-    grid-area: 6/2/7/4;
+.single-p {
+    margin-top: 10px;
 }
 
 form input {
-    font-family: sans-serif;
-    font-size: 24px;
-    border-radius: 1em;
-    padding: 8px 15px;
-    margin: 10px;
+    font-family: serif;
+    border: 0px;
+    font-size: 1em;
+    border-radius: .25em;
+    padding: 8px 10px;
+    margin-top: 5px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
+
 /* form button */
+
 form button {
     border: 0;
     border-radius: 1.25rem;
     padding: .2em .5em;
-    margin: 5px;
+    margin: 1.15em 0px 0px;
     cursor: pointer;
     position: relative;
     font-size: 1.2rem;
@@ -81,6 +97,28 @@ form button {
     justify-content: center;
 }
 
+.gmail-link {
+    margin-top: 30px;
+    display: grid;
+}
+
+.gmail-link a {
+    position: absolute;
+    justify-self: center;
+    color: #fff;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    text-decoration: none;
+    font-size: 1em;
+    transition: all .75s;
+}
+
+.gmail-link a:hover,
+.gmail-link a:focus {
+    color: rgba(212 255 250);
+    text-shadow: 0px 0px 20px rgba(2 255 250);
+    transform: translateY(-10px);
+}
+
 .glow-effect {
     --cont-offset: 20px;
     --clr-glow-line: rgba(212 255 250);
@@ -88,19 +126,21 @@ form button {
     --clr-glow-line-btn2: rgba(212 255 250);
     --clr-glow-blur-btn2: #f7d1d1;
     --width-glow-line: 2px;
-    --size-glow-blur: 20px;
+    --size-glow-blur: 8px;
 }
 
 .glow-container {
     position: absolute;
     /*outline: 3px solid #000;*/
+    border-radius: 1.25em;
     width: calc(100% + var(--cont-offset));
     height: calc(100% + var(--cont-offset));
     inset: calc(var(--cont-offset) / -2);
     pointer-events: none;
 }
 
-.glow-blur, .glow-line {
+.glow-blur,
+.glow-line {
     rx: 1.25rem;
     width: calc(100% - var(--cont-offset));
     height: calc(100% - var(--cont-offset));
@@ -111,7 +151,8 @@ form button {
     transition: stroke-dashoffset 2s;
 }
 
-.glow-effect:hover .glow-blur, .glow-effect:hover .glow-line {
+.glow-effect:hover .glow-blur,
+.glow-effect:hover .glow-line {
     stroke-dashoffset: -65px;
 }
 
@@ -128,4 +169,44 @@ form button {
 
 .btn .glow-line {
     stroke: var(--clr-glow-line-btn2);
+}
+
+.messages,
+.form-errors,
+.field-error {
+    width: min(420px, 90vw);
+    margin: 12px auto;
+    color: #ffd6d6;
+    font-weight: 700;
+    text-align: center;
+}
+
+.field-error {
+    display: block;
+    margin: 6px 0 0;
+}
+
+.social-links {
+    position: static;
+    gap: 10px;
+    margin-top: 24px;
+}
+
+.social-links a,
+.gmail-link:not(.social-links) a {
+    position: static;
+}
+
+@media screen and (max-width: 480px) {
+    form {
+        grid-area: 2 / 1 / 6 / 7;
+        margin: 0.75em;
+        padding: 1.5em;
+        border-radius: 20px;
+        width: calc(100% - 1.5em);
+    }
+
+    form button {
+        width: 100%;
+    }
 }

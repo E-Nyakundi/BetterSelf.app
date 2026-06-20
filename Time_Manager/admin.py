@@ -5,7 +5,8 @@ from .models import Schedule, Routine, Goals, YearlyGoal, MonthlyGoal, WeeklyGoa
 
 #configurations
 class ScheduleAdmin(admin.ModelAdmin):
-    pass
+    list_display = ['activity', 'start_time', 'end_time']
+    
 class RoutineAdmin(admin.ModelAdmin):
     list_display = ['name', 'start_time', 'end_time']
     

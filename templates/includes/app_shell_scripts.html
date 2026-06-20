@@ -1,0 +1,73 @@
+<script>
+(function () {
+    // ---- Theme toggle: persisted via localStorage, defaults to system preference ----
+    var root = document.documentElement;
+    var STORAGE_KEY = 'lifeapp-theme';
+
+    function applyTheme(theme) {
+        if (theme === 'dark') {
+            root.setAttribute('data-theme', 'dark');
+        } else {
+            root.removeAttribute('data-theme');
+        }
+    }
+
+    var saved = null;
+    try { saved = localStorage.getItem(STORAGE_KEY); } catch (e) { /* storage may be unavailable */ }
+
+    if (saved) {
+        applyTheme(saved);
+    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        applyTheme('dark');
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var toggleBtn = document.getElementById('theme-toggle-btn');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', function () {
+                var isDark = root.getAttribute('data-theme') === 'dark';
+                var next = isDark ? 'light' : 'dark';
+                applyTheme(next);
+                try { localStorage.setItem(STORAGE_KEY, next); } catch (e) { /* ignore */ }
+            });
+        }
+
+        // ---- Mobile sidebar open/close ----
+        var menuToggle = document.getElementById('app-menu-toggle-btn');
+        var sidebar = document.getElementById('app-sidebar');
+        var backdrop = document.getElementById('app-sidebar-backdrop');
+
+        function closeSidebar() {
+            if (sidebar) sidebar.classList.remove('is-open');
+            if (backdrop) backdrop.classList.remove('is-open');
+        }
+
+        function openSidebar() {
+            if (sidebar) sidebar.classList.add('is-open');
+            if (backdrop) backdrop.classList.add('is-open');
+        }
+
+        if (menuToggle) {
+            menuToggle.addEventListener('click', function () {
+                if (sidebar && sidebar.classList.contains('is-open')) {
+                    closeSidebar();
+                } else {
+                    openSidebar();
+                }
+            });
+        }
+        if (backdrop) {
+            backdrop.addEventListener('click', closeSidebar);
+        }
+
+        // ---- Auto-dismiss toast messages ----
+        document.querySelectorAll('.messages p').forEach(function (msg) {
+            setTimeout(function () {
+                msg.style.transition = 'opacity 200ms ease';
+                msg.style.opacity = '0';
+                setTimeout(function () { msg.remove(); }, 220);
+            }, 4500);
+        });
+    });
+})();
+</script>

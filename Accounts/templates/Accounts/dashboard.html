@@ -1,15 +1,271 @@
 {% extends "base.html" %}
 {% load static %}
-{% load socialaccount %}
+
+{% block title %}Dashboard{% endblock %}
 
 {% block head %}
-    <link rel="stylesheet" href="{% static 'dashboard.css' %}">
-    <link rel="stylesheet" href="{% static '/tm_base.css' %}">
-    {% block title %}Dashboard{% endblock %}
+<link rel="stylesheet" href="{% static 'dashboard.css' %}">
 {% endblock %}
-{% block content %}
-    
-{% endblock %}
-{% block footer %}
 
+{% block content %}
+<div class="main-content">
+
+    <!-- GREETING -->
+    <section class="dash-greeting">
+        <div class="bs-eyebrow">
+            {% now "G" as current_hour %}
+            {% if current_hour|add:0 < 12 %}Good Morning{% elif current_hour|add:0 < 18 %}Good Afternoon{% else %}Good Evening{% endif %}
+        </div>
+        <h1>{{ user.first_name|default:user.username }}</h1>
+        <p>{{ today|date:"l, F j" }}</p>
+    </section>
+
+    <!-- DASH GRID -->
+    <div class="dash-grid">
+
+        <!-- NEXT UP -->
+        <section class="dash-card dash-card--next">
+            <div class="dash-card-title">
+                <h3><i class="fas fa-clock"></i> Next Up</h3>
+                <a href="{% url 'scheduller' %}" class="bs-card-link">Full schedule</a>
+            </div>
+
+            {% if next_up %}
+                <ul class="dash-next-list">
+                    {% for item in next_up %}
+                        <li class="dash-next-item{% if forloop.first %} is-next{% endif %}">
+                            <span class="dash-next-time">{{ item.start_time|time:"H:i" }}</span>
+                            <span class="dash-next-activity">{{ item.activity }}</span>
+                            <span class="dash-next-type">{{ item.type|title }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="dash-finance-coming"><i class="fas fa-mug-hot"></i> Nothing left on today's schedule.</p>
+            {% endif %}
+        </section>
+
+        <!-- TODAY'S FOCUS -->
+        <section class="dash-card dash-card--focus">
+            <div class="dash-card-title">
+                <h3><i class="fas fa-bullseye"></i> Today's Focus</h3>
+            </div>
+
+            {% if todays_focus %}
+                <ul class="dash-focus-list">
+                    {% for task in todays_focus %}
+                        <li class="dash-focus-item{% if task.completed %} is-done{% endif %}">
+                            <form method="post" action="{% url 'toggle_daily_goal' task.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="dash-focus-check" aria-label="Toggle complete">{% if task.completed %}✓{% endif %}</button>
+                            </form>
+                            <div class="dash-focus-text">{{ task.goal }}</div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="dash-finance-coming"><i class="fas fa-bullseye"></i> No tasks scheduled for today yet — <a href="{% url 'create_daily_goal' %}">add one</a>.</p>
+            {% endif %}
+        </section>
+
+        <!-- WELLBEING -->
+        <section class="dash-card dash-card--wellbeing">
+            <div class="dash-card-title">
+                <h3><i class="fas fa-heart"></i> Energy</h3>
+            </div>
+
+            {% if wellbeing.has_any_entries %}
+                <div class="dash-wellbeing-grid">
+                    <div class="dash-metric">
+                        <div class="dash-metric-label">Energy</div>
+                        {% if wellbeing.energy != None %}
+                            <div class="bs-ring" style="--pct: {{ wellbeing.energy }};"><span class="bs-ring-label">{{ wellbeing.energy }}%</span></div>
+                        {% else %}
+                            <strong>—</strong>
+                        {% endif %}
+                    </div>
+
+                    <div class="dash-metric">
+                        <div class="dash-metric-label">Mood</div>
+                        {% if wellbeing.mood != None %}
+                            <div class="bs-ring" style="--pct: {{ wellbeing.mood }};"><span class="bs-ring-label">{{ wellbeing.mood }}%</span></div>
+                        {% else %}
+                            <strong>—</strong>
+                        {% endif %}
+                    </div>
+                </div>
+                <p class="dash-finance-sub">7-day average</p>
+            {% else %}
+                <p class="dash-finance-coming"><i class="fas fa-pen"></i> No journal entries this week yet — <a href="{% url 'journal' %}">log one</a>.</p>
+            {% endif %}
+        </section>
+
+        <!-- STREAKS -->
+        <section class="dash-card dash-card--streaks">
+            <div class="dash-card-title">
+                <h3><i class="fas fa-fire"></i> Streaks</h3>
+            </div>
+
+            {% if streaks %}
+                <ul class="dash-streak-list">
+                    {% for row in streaks %}
+                        <li class="dash-streak-item">
+                            <span class="dash-streak-name">{{ row.name }}</span>
+                            <span class="dash-streak-count{% if row.streak >= 30 %} is-record{% endif %}"><i class="fas fa-fire"></i> {{ row.streak }} day{{ row.streak|pluralize }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="dash-finance-coming"><i class="fas fa-fire"></i> Streak tracking starts now — complete a goal today.</p>
+            {% endif %}
+        </section>
+
+        <!-- GOALS -->
+        <section class="dash-card dash-card--goals">
+            <div class="dash-card-title">
+                <h3><i class="fas fa-bullseye"></i> Goals</h3>
+                <a href="{% url 'goals' %}" class="bs-card-link">View tree</a>
+            </div>
+
+            {% if goal_progress %}
+                <div class="dash-goal-list">
+                    {% for row in goal_progress %}
+                        <div class="dash-goal-row">
+                            <div class="dash-goal-row-head">
+                                <span class="dash-goal-name">{{ row.name }}</span>
+                                <span class="dash-goal-pct">{% if row.pct != None %}{{ row.pct }}%{% else %}Not started{% endif %}</span>
+                            </div>
+                            {% if row.pct != None %}
+                                <div class="bs-progress"><div class="bs-progress-fill" style="width: {{ row.pct }}%;"></div></div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="dash-finance-coming"><i class="fas fa-bullseye"></i> No goals yet — <a href="{% url 'create_goal' %}">set your first one</a>.</p>
+            {% endif %}
+        </section>
+
+        <!-- FINANCE -->
+        <section class="dash-card dash-card--finance">
+            <div class="dash-card-title">
+                <h3><i class="fas fa-wallet"></i> Finance</h3>
+                <a href="{% url 'finance-dashboard' %}" class="bs-card-link">View all</a>
+            </div>
+
+            {% if finance.has_any_goals %}
+                <p class="dash-finance-figure">KES {{ finance.total_saved|floatformat:0 }} <span class="dash-finance-sub">of {{ finance.total_target|floatformat:0 }}</span></p>
+                {% if finance.overall_pct != None %}
+                    <p class="dash-finance-sub">{{ finance.overall_pct }}% of total target saved</p>
+                {% endif %}
+                <div class="dash-goal-list">
+                    {% for row in finance.top_goals %}
+                        <div class="dash-goal-row">
+                            <div class="dash-goal-row-head">
+                                <span>{{ row.name }}</span>
+                                <span class="dash-goal-pct">{% if row.pct != None %}{{ row.pct }}%{% else %}Not started{% endif %}</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="dash-finance-coming">
+                    <i class="fas fa-wallet"></i>
+                    <span>No financial goals yet — <a href="{% url 'financial-goal-create' %}">add one</a></span>
+                </div>
+            {% endif %}
+
+            {% if finance.mpesa.has_activity %}
+                <p class="dash-finance-sub" style="margin-top: var(--space-3);">
+                    <i class="fas fa-mobile-screen-button"></i>
+                    KES {{ finance.mpesa.total_deposited|floatformat:0 }} via M-Pesa ({{ finance.mpesa.success_count }} deposit{{ finance.mpesa.success_count|pluralize }}) —
+                    <a href="{% url 'mpesa-hub' %}">view</a>
+                </p>
+            {% else %}
+                <p class="dash-finance-sub" style="margin-top: var(--space-3);">
+                    <i class="fas fa-mobile-screen-button"></i>
+                    <a href="{% url 'mpesa-hub' %}">Set up M-Pesa</a> to track deposits here
+                </p>
+            {% endif %}
+        </section>
+
+        <!-- BALANCE -->
+        <section class="dash-card dash-card--balance">
+            <div class="dash-card-title">
+                <h3><i class="fas fa-balance-scale"></i> Life Balance</h3>
+            </div>
+
+            <div class="dash-finance-coming">
+                <i class="fas fa-chart-pie"></i>
+                <span>Radar chart arriving next phase</span>
+            </div>
+        </section>
+
+        <!-- ACTIVITY -->
+        <section class="dash-card dash-card--activity">
+            <div class="dash-card-title">
+                <h3><i class="fas fa-history"></i> Activity</h3>
+            </div>
+
+            {% if recent_activity %}
+                <ul class="dash-activity-list">
+                    {% for activity in recent_activity %}
+                        <li class="dash-activity-item">
+                            <div class="dash-activity-icon">
+                                <i class="fas {{ activity.icon }}"></i>
+                            </div>
+
+                            <div class="dash-activity-body">
+                                <div class="dash-activity-text">{{ activity.text }}</div>
+                                <div class="dash-activity-time">{{ activity.time_ago }}</div>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="dash-finance-coming"><i class="fas fa-history"></i> No activity logged yet.</p>
+            {% endif %}
+        </section>
+
+        <!-- QUICK ACTIONS -->
+        <section class="dash-card dash-card--quick">
+            <div class="dash-card-title">
+                <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+            </div>
+
+            <div class="dash-quick-grid">
+                <a href="{% url 'create_goal' %}" class="dash-quick-action">
+                    <i class="fas fa-plus"></i>
+                    <span>Goal</span>
+                </a>
+
+                <a href="{% url 'add_event' %}" class="dash-quick-action">
+                    <i class="fas fa-calendar"></i>
+                    <span>Event</span>
+                </a>
+
+                <a href="{% url 'routine' %}" class="dash-quick-action">
+                    <i class="fas fa-repeat"></i>
+                    <span>Routine</span>
+                </a>
+
+                <a href="{% url 'item-create' %}" class="dash-quick-action">
+                    <i class="fas fa-box"></i>
+                    <span>Item</span>
+                </a>
+
+                <a href="{% url 'journal' %}" class="dash-quick-action">
+                    <i class="fas fa-pen"></i>
+                    <span>Reflection</span>
+                </a>
+
+                <a href="{% url 'mpesa-hub' %}" class="dash-quick-action">
+                    <i class="fas fa-mobile-screen-button"></i>
+                    <span>M-Pesa</span>
+                </a>
+            </div>
+        </section>
+
+    </div>
+</div>
 {% endblock %}

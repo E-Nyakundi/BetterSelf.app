@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{% if form.instance.pk %}Edit Financial Goal{% else %}Add Financial Goal{% endif %}{% endblock %}
+{% block page_title %}{% if form.instance.pk %}Edit goal{% else %}Add goal{% endif %}{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'finance_form.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="finance-form-page">
+    <div class="form-header">
+        <h2>{% if form.instance.pk %}Edit Financial Goal{% else %}Add Financial Goal{% endif %}</h2>
+    </div>
+
+    <form method="post" class="finance-form">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="form-errors">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        {% for field in form %}
+            <div class="form-field">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                {% for error in field.errors %}
+                    <span class="field-error">{{ error }}</span>
+                {% endfor %}
+            </div>
+        {% endfor %}
+
+        <div class="form-actions">
+            <button type="submit" class="bs-btn bs-btn--primary">Save goal</button>
+            <a href="{% url 'financial-goal-list' %}" class="bs-btn bs-btn--secondary">Back</a>
+            {% if form.instance.pk %}
+                <a href="{% url 'financial-goal-delete' form.instance.pk %}" class="bs-btn bs-btn--danger">Delete goal</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+{% endblock %}

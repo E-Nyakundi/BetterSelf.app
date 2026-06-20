@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}New Deposit — M-Pesa{% endblock %}
+{% block page_title %}New deposit{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'mpesa.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="bs-page-header">
+    <div>
+        <span class="bs-eyebrow">Finance &amp; Wealth · M-Pesa</span>
+        <h1>New deposit</h1>
+        <p>Triggers an STK push to your verified phone. You confirm on your handset; this page updates automatically.</p>
+    </div>
+    <div class="bs-page-header-actions">
+        <a href="{% url 'mpesa-hub' %}" class="bs-btn bs-btn--ghost"><i class="fa-solid fa-arrow-left"></i> Back to M-Pesa</a>
+    </div>
+</div>
+
+{% if not email_verified or not verified_phone %}
+
+<div class="bs-empty">
+    <h3>Verification needed</h3>
+    <p>
+        {% if not email_verified %}Confirm your email address{% if not verified_phone %} and verify a phone number{% endif %}{% else %}Verify the phone number you'll deposit from{% endif %}
+        before making a deposit.
+    </p>
+    <a href="{% url 'mpesa-verify-page' %}" class="bs-btn bs-btn--primary">Verify now</a>
+</div>
+
+{% else %}
+
+<div class="bs-card mpesa-deposit-card">
+
+    <div id="mpesa-deposit-form-wrap">
+        <div class="mpesa-form-error" id="mpesa-form-error"></div>
+
+        <div class="mpesa-amount-display">
+            <span class="mpesa-amount-currency">KES</span>
+            <input type="number" id="mpesa-amount" min="1" step="1" placeholder="0" inputmode="numeric">
+        </div>
+
+        <div class="mpesa-quick-amounts">
+            <button type="button" class="mpesa-quick-amount-btn" data-amount="100">KES 100</button>
+            <button type="button" class="mpesa-quick-amount-btn" data-amount="500">KES 500</button>
+            <button type="button" class="mpesa-quick-amount-btn" data-amount="1000">KES 1,000</button>
+            <button type="button" class="mpesa-quick-amount-btn" data-amount="2500">KES 2,500</button>
+            <button type="button" class="mpesa-quick-amount-btn" data-amount="5000">KES 5,000</button>
+        </div>
+
+        <div class="bs-field">
+            <label for="mpesa-phone">M-Pesa phone number</label>
+            <input type="text" id="mpesa-phone" value="{{ verified_phone.phone_number }}" readonly>
+            <small>Locked to your verified number. <a href="{% url 'mpesa-verify-page' %}">Verify a different number</a>.</small>
+        </div>
+
+        {% if goals %}
+        <div class="bs-field">
+            <label for="mpesa-goal">Apply toward a goal <small>(optional)</small></label>
+            <select id="mpesa-goal">
+                <option value="">No specific goal — general savings</option>
+                {% for goal in goals %}
+                <option value="{{ goal.pk }}" {% if preselected_goal == goal.pk|stringformat:"s" %}selected{% endif %}>{{ goal.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+
+        <div class="form-actions">
+            <button type="button" id="mpesa-submit-btn" class="bs-btn bs-btn--primary" style="width: 100%;">
+                <i class="fa-solid fa-mobile-screen-button"></i> Send STK push
+            </button>
+        </div>
+    </div>
+
+    <div class="mpesa-deposit-result" id="mpesa-deposit-result">
+        <div id="mpesa-result-pending">
+            <div class="mpesa-spinner"></div>
+            <h3>Check your phone</h3>
+            <p class="muted">Enter your M-Pesa PIN on the prompt sent to <span id="mpesa-result-phone"></span>.</p>
+        </div>
+        <div id="mpesa-result-success" style="display:none;">
+            <i class="fa-solid fa-circle-check" style="font-size: var(--text-2xl); color: var(--color-success);"></i>
+            <h3>Deposit confirmed</h3>
+            <p class="muted">KES <span id="mpesa-result-amount"></span> received. Receipt: <span class="mono" id="mpesa-result-receipt"></span></p>
+            <a href="{% url 'mpesa-hub' %}" class="bs-btn bs-btn--primary">Back to M-Pesa</a>
+        </div>
+        <div id="mpesa-result-failed" style="display:none;">
+            <i class="fa-solid fa-circle-xmark" style="font-size: var(--text-2xl); color: var(--color-danger);"></i>
+            <h3>Deposit didn't go through</h3>
+            <p class="muted">It may have been cancelled or timed out on your phone.</p>
+            <button type="button" id="mpesa-try-again-btn" class="bs-btn bs-btn--secondary">Try again</button>
+        </div>
+    </div>
+
+</div>
+
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    var amountInput = document.getElementById('mpesa-amount');
+    var submitBtn = document.getElementById('mpesa-submit-btn');
+    var errorBox = document.getElementById('mpesa-form-error');
+    var formWrap = document.getElementById('mpesa-deposit-form-wrap');
+    var resultBox = document.getElementById('mpesa-deposit-result');
+    if (!submitBtn) return; // verification gate active, no form on the page
+
+    document.querySelectorAll('.mpesa-quick-amount-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.mpesa-quick-amount-btn').forEach(function (b) { b.classList.remove('is-active'); });
+            btn.classList.add('is-active');
+            amountInput.value = btn.dataset.amount;
+        });
+    });
+
+    function getCookie(name) {
+        var match = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+        return match ? match.pop() : '';
+    }
+
+    function showError(message) {
+        errorBox.textContent = message;
+        errorBox.classList.add('is-visible');
+    }
+
+    var statusUrlTemplate = '{% url "mpesa-transaction-status" 0 %}';
+
+    function pollStatus(transactionId, phoneNumber) {
+        document.getElementById('mpesa-result-phone').textContent = phoneNumber;
+        var statusUrl = statusUrlTemplate.replace('/0/', '/' + transactionId + '/');
+        var attempts = 0;
+        var poll = setInterval(function () {
+            attempts += 1;
+            fetch(statusUrl)
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (data.status === 'SUCCESS') {
+                        clearInterval(poll);
+                        document.getElementById('mpesa-result-pending').style.display = 'none';
+                        document.getElementById('mpesa-result-amount').textContent = data.amount;
+                        document.getElementById('mpesa-result-receipt').textContent = data.mpesa_receipt_number || '—';
+                        document.getElementById('mpesa-result-success').style.display = 'block';
+                    } else if (data.status === 'FAILED') {
+                        clearInterval(poll);
+                        document.getElementById('mpesa-result-pending').style.display = 'none';
+                        document.getElementById('mpesa-result-failed').style.display = 'block';
+                    } else if (attempts > 40) {
+                        clearInterval(poll); // ~2 minutes: stop polling, leave the pending state visible
+                    }
+                })
+                .catch(function () { /* transient network errors: keep polling */ });
+        }, 3000);
+    }
+
+    submitBtn.addEventListener('click', function () {
+        errorBox.classList.remove('is-visible');
+        var amount = parseFloat(amountInput.value);
+        if (!amount || amount <= 0) {
+            showError('Enter an amount greater than zero.');
+            return;
+        }
+        var phone = document.getElementById('mpesa-phone').value;
+        var goalEl = document.getElementById('mpesa-goal');
+        var goalId = goalEl ? goalEl.value : '';
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending…';
+
+        fetch('{% url "mpesa-initiate" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: JSON.stringify({ amount: amount, phone_number: phone, financial_goal: goalId || null }),
+        })
+            .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+            .then(function (result) {
+                if (!result.ok) {
+                    showError(result.data.error || 'Could not start the deposit. Try again.');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fa-solid fa-mobile-screen-button"></i> Send STK push';
+                    return;
+                }
+                formWrap.style.display = 'none';
+                resultBox.classList.add('is-visible');
+                pollStatus(result.data.transaction_id, phone);
+            })
+            .catch(function () {
+                showError('Network error — please try again.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fa-solid fa-mobile-screen-button"></i> Send STK push';
+            });
+    });
+
+    var tryAgainBtn = document.getElementById('mpesa-try-again-btn');
+    if (tryAgainBtn) {
+        tryAgainBtn.addEventListener('click', function () {
+            resultBox.classList.remove('is-visible');
+            formWrap.style.display = 'block';
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fa-solid fa-mobile-screen-button"></i> Send STK push';
+            document.getElementById('mpesa-result-failed').style.display = 'none';
+            document.getElementById('mpesa-result-pending').style.display = 'block';
+        });
+    }
+})();
+</script>
+{% endblock %}

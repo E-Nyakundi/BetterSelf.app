@@ -1,0 +1,139 @@
+/* ==========================================================================
+   Site-wide micro-interactions — keyframes & supporting styles for
+   static/site-animations.js. Purely additive: nothing here changes layout,
+   it only animates opacity/transform, so it's safe on every page.
+   ========================================================================== */
+
+@media (prefers-reduced-motion: no-preference) {
+    .page-enter {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    .page-enter-active {
+        opacity: 1;
+        transform: translateY(0);
+        transition: opacity 360ms var(--ease), transform 360ms var(--ease);
+    }
+
+    .reveal-item {
+        opacity: 0;
+        transform: translateY(14px);
+        transition: opacity 460ms var(--ease), transform 460ms var(--ease);
+    }
+
+    .reveal-item.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Buttons/cards always end up visible even if JS hasn't run yet or motion is reduced */
+.reveal-item.is-visible,
+.reveal-item {
+    will-change: opacity, transform;
+}
+
+.bs-btn, .capture-btn, .capture-shutter, .icon-tile {
+    position: relative;
+    overflow: hidden;
+}
+
+.ripple-effect {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.45);
+    transform: scale(0);
+    animation: ripple-grow 600ms var(--ease) forwards;
+    pointer-events: none;
+}
+
+.bs-btn--secondary .ripple-effect,
+.bs-btn--ghost .ripple-effect,
+.bs-btn--warning .ripple-effect,
+.capture-btn--ghost .ripple-effect,
+.icon-tile .ripple-effect {
+    background: rgba(196, 88, 47, 0.16);
+}
+
+@keyframes ripple-grow {
+    to {
+        transform: scale(1);
+        opacity: 0;
+    }
+}
+
+/* ---- Confetti burst on success messages ---- */
+.confetti-piece {
+    position: fixed;
+    width: 7px;
+    height: 7px;
+    border-radius: 2px;
+    z-index: 1200;
+    pointer-events: none;
+    animation: confetti-fly 1000ms ease-out forwards;
+}
+
+@keyframes confetti-fly {
+    0% {
+        transform: translate(0, 0) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(var(--dx), var(--dy)) rotate(280deg);
+        opacity: 0;
+    }
+}
+
+/* ---- Stat numbers feel like they're ticking up ---- */
+[data-count-up] {
+    display: inline-block;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---- Hover lift, applied broadly so list/table rows feel responsive ---- */
+@media (prefers-reduced-motion: no-preference) {
+    .inventory-table tbody tr {
+        transition: background var(--duration-fast) var(--ease), transform var(--duration-fast) var(--ease);
+    }
+
+    .inventory-table tbody tr:hover {
+        transform: translateX(2px);
+    }
+}
+
+/* ---- Sidebar nav links: animated active underline ---- */
+.app-nav-link {
+    position: relative;
+}
+
+.app-nav-link.is-active::before {
+    content: '';
+    position: absolute;
+    left: -1px;
+    top: 50%;
+    transform: translateY(-50%) scaleY(0);
+    width: 3px;
+    height: 60%;
+    border-radius: var(--radius-pill);
+    background: var(--color-accent);
+    transition: transform var(--duration-base) var(--ease);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .app-nav-link.is-active::before {
+        transform: translateY(-50%) scaleY(1);
+    }
+}
+
+/* ---- Toasts slide + settle instead of just appearing ---- */
+@media (prefers-reduced-motion: no-preference) {
+    .messages p {
+        animation: toast-in 320ms var(--ease);
+    }
+}
+
+@keyframes toast-in {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}

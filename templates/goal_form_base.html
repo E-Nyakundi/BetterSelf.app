@@ -5,24 +5,26 @@
     <link rel="stylesheet" href="{% static 'goal_form_style.css' %}">
 {% endblock %}
 
+{% block page_title %}{% block title %}Goal{% endblock %}{% endblock %}
+
 {% block content %}
 <div class='form'>
     <div class='sub_form'>
-    <legend>{% block title %}Goal{% endblock %}</legend>
+    <legend>{% if form.instance.pk %}Edit{% else %}Create{% endif %}</legend>
     <form method="post">
         <fieldset>
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit">{% if form.instance.pk %} Update {% else %} Create {% endif %}</button> 
+        <button type="submit" class="bs-btn bs-btn--primary">{% if form.instance.pk %} Update {% else %} Create {% endif %}</button> 
         </fieldset>
     </form>
     
 {% block form %}
-    <form></form> 
+<form>
+    
+</form>
 {% endblock %}
 </div>
-      
-    
 </div>
 {% endblock %}
 

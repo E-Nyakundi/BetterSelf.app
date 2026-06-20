@@ -1,97 +1,82 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    color: #000;
-}
-body {
-    position: relative;
-    background: url("workstation.jpg");
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
-    font-family: Arial, sans-serif;
-    color: #333;
-}
+/* ==========================================================================
+   Goal form — shared by Goal, Yearly, Monthly, Weekly, Day, Daily templates
+   (all extend goal_form_base.html, which renders {{ form.as_p }} inside
+   .form > .sub_form > <fieldset>)
+   ========================================================================== */
 
-.tm-nav{
-    background: #ffffffad;
-}
-
-.tm-nav a {
-    color: #000;
-    text-decoration: none;
-}
-
-main{
-    padding: 0;
-}
-
-.form{
-    display: grid;
-    justify-content: center;
-    margin: 5em 1em 0;
-    padding: 2em;
+.form {
+    width: min(560px, calc(100vw - 32px));
+    margin: 0 auto;
 }
 
 .sub_form {
-    background: rgba(255, 174, 174, 0.25);
-    padding: 5em;
-    border-radius: 25px;
-    box-shadow: 
-        inset 0px 0px 10px 5px rgba(255, 0, 0, 50%), /* Inner shadow to sit on the border */
-        0px 0px 100px rgba(255, 0, 0, 1);         /* Outer shadow for the glow */
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-8);
+    box-shadow: var(--shadow-sm);
 }
 
-
-fieldset{
-    
-    background: #FFF;
-    margin: 1em 0;
-    padding: 2.5em;
-    border: 0;
-    border-radius: 25px;
-    min-width: 200px;
-    box-shadow: rgba(255, 255, 255) 0px 0px 50px;
+.sub_form legend {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-lg);
+    color: var(--color-ink);
+    padding: 0;
+    margin-bottom: var(--space-6);
 }
 
-legend{
-    text-align: center;
-    font-size: 1.5em;
-    font: Bold;
-    padding: 0 .25em;
-    color: #000;
-}
-p{
-    margin: .5em 0em;
-}
-label{
-    margin-right: 1em;
-}
-input{
-    padding: 2.5px;
-}
-textarea{
-    display: block;
-    padding: 5px;
+.sub_form fieldset {
+    border: none;
+    padding: 0;
+    margin: 0;
 }
 
-button{
-    background: #37ad00;
-    color: #ffffff;
-    padding: .25em;
-    border: 0;
-    border-radius: 3px;
+.sub_form p {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+    color: var(--color-ink);
 }
 
-button.btn.btn-danger{
-    background: #ff0000;
-    color: #FFF;
-    padding: .25em;
-    border: 0;
-    border-radius: 3px;
+.sub_form p label {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-ink);
 }
 
-button:hover{
+.sub_form button[type="submit"] {
+    margin-top: var(--space-2);
+}
 
+.sub_form form + form {
+    margin-top: var(--space-3);
+}
+
+.datetime-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+}
+
+.form-group--checkbox {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.form-group--checkbox label {
+    margin: 0;
+}
+
+@media (max-width: 700px) {
+    .sub_form {
+        padding: var(--space-6);
+    }
+
+    .datetime-group {
+        grid-template-columns: 1fr;
+    }
 }

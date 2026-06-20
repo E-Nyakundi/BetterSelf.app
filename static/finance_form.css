@@ -1,0 +1,73 @@
+/* ==========================================================================
+   Financial goal forms, detail, and confirmation pages
+   (mirrors item_form.css's layout; detail-list/.muted are shared globally
+   so only the page-shell and form selectors are redefined here)
+   ========================================================================== */
+
+.finance-form-page {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-8);
+    width: min(640px, 100%);
+    margin: 0 auto;
+}
+
+.finance-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-bottom: var(--space-6);
+    flex-wrap: wrap;
+}
+
+.form-header h2 {
+    margin: 0;
+}
+
+.detail-list {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: var(--space-3) var(--space-4);
+    margin: 0 0 var(--space-6);
+}
+
+.detail-list dt {
+    font-size: var(--text-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-ink-faint);
+}
+
+.detail-list dd {
+    margin: 0;
+    color: var(--color-ink);
+    font-size: var(--text-sm);
+}
+
+.muted {
+    color: var(--color-ink-faint);
+    font-size: var(--text-sm);
+}
+
+@media (max-width: 700px) {
+    .finance-form-page {
+        padding: var(--space-6);
+    }
+
+    .detail-list {
+        grid-template-columns: 1fr;
+        gap: var(--space-1);
+    }
+
+    .detail-list dt {
+        margin-top: var(--space-3);
+    }
+}

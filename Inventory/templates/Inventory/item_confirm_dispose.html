@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dispose Item{% endblock %}
+{% block page_title %}Dispose item{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'item_form.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="inventory-form-page">
+    <h2>Dispose item</h2>
+    <p>Dispose <strong>{{ object.name }}</strong> from your inventory?</p>
+    <p class="muted">This removes the item record. Categories and other items will stay untouched.</p>
+
+    <form method="post" class="form-actions">
+        {% csrf_token %}
+        <button type="submit" class="bs-btn bs-btn--danger">Dispose item</button>
+        <a href="{% url 'item-detail' object.pk %}" class="bs-btn bs-btn--secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

@@ -1,107 +1,185 @@
 {% extends "tm_base.html" %}
 {% load static %}
 
+{% block title %} Goals {% endblock %}
+{% block page_title %}Goals{% endblock %}
 {% block head %}
-<link rel="stylesheet" href="{% static 'tm_base.css' %}">
-<link rel="stylesheet" href="{% static 'goals.css' %}">
+    <link rel="stylesheet" href="{% static 'goals.css' %}">
 {% endblock %}
 
 {% block content %}
-<section class="goal-table">
-    <table>
-        <thead>
-            <tr>
-                <th scope="col">Goal</th>
-                <th scope="col">Yearly Goal</th>
-                <th scope="col">Monthly Goal</th>
-                <th scope="col">Weekly Goal</th>
-                <th scope="col">Daily Goal</th>
-                <th scope="col">Tasks</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% if goals %}
-                {% for goal in goals|dictsort:"start_year" %}
-                    <tr>
-                        <td>
-                            <a href="{% url 'edit_goal' goal.id %}" aria-label="Edit {{ goal.name }}">{{ goal.name }}</a>
-                            <a href="{% url 'create_yearly_goal' %}?goal={{ goal.id }}" class="create-link">+ Create Yearly Goal</a>
-                        </td>
-                        <td colspan="5"></td>
-                    </tr>
-                    {% for yearly_goal in goal.yearly_goals.all|dictsort:"year" %}
-                        <tr>
-                            <td></td>
-                            <td>
-                                <a href="{% url 'edit_yearly_goal' yearly_goal.id %}" aria-label="Edit {{ yearly_goal.goal }}">{{ yearly_goal.goal }}</a>
-                                <a href="{% url 'create_monthly_goal' %}?year={{ yearly_goal.id }}" class="create-link">+ Create Monthly Goal</a>
-                            </td>
-                            <td colspan="4"></td>
-                        </tr>
-                        {% for monthly_goal in yearly_goal.monthly_goals.all|dictsort:"month" %}
-                            <tr>
-                                <td></td>
-                                <td></td>
-                                <td>
-                                    <a href="{% url 'edit_monthly_goal' monthly_goal.id %}" aria-label="Edit {{ monthly_goal.goal }}">{{ monthly_goal.goal }}</a>
-                                    <a href="{% url 'create_weekly_goal' %}?month={{ monthly_goal.id }}" class="create-link">+ Create Weekly Goal</a>
-                                </td>
-                                <td colspan="3"></td>
-                            </tr>
-                            {% for weekly_goal in monthly_goal.weekly_goals.all|dictsort:"start_date" %}
-                                <tr>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td>
-                                        <a href="{% url 'edit_weekly_goal' weekly_goal.id %}" aria-label="Edit {{ weekly_goal.goal }}">{{ weekly_goal.goal }}</a>
-                                        <a href="{% url 'create_day_goal' %}?week={{ weekly_goal.id }}" class="create-link">+ Create Day's Goal</a>
-                                    </td>
-                                    <td colspan="2"></td>
-                                </tr>
-                                {% for day_goal in weekly_goal.day_goal.all|dictsort:"date" %}
-                                    <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td>
-                                            <a href="{% url 'edit_day_goal' day_goal.id %}" aria-label="Edit {{ day_goal.goal }}">{{ day_goal.goal }}</a>
-                                            <a href="{% url 'create_daily_goal' %}?day={{ day_goal.id }}" class="create-link">+ Create Daily Goal</a>
-                                        </td>
-                                        <td></td>
-                                    </tr>
-                                    {% for daily_goal in day_goal.daily_goals.all|dictsort:"start_time" %}
-                                        <tr>
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td>
-                                                <a href="{% url 'edit_daily_goal' daily_goal.id %}" aria-label="Edit {{ daily_goal.goal }}">{{ daily_goal.goal }}</a>
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                {% endfor %}    
-                            {% endfor %}
-                        {% endfor %}
-                    {% endfor %}
-                {% endfor %}
-            {% else %}
-            <tr>
-                <td colspan="5" style="text-align: center; color: #666; font-style: italic;">
-                    No goals found. <a href="{% url 'create_goal' %}" style="color: #4CAF50;">Add a new goal</a>.
-                </td>
-            </tr>
-        {% endif %}
-        <!-- Add a generic link for creating a new main goal -->
-        <tr>
-            <td colspan="5" style="text-align: center;">
-                <a href="{% url 'create_goal' %}" class="create-link" aria-label="Add a new main goal">+ Add New Goal</a>
-            </td>
-        </tr>
-        </tbody>
-    </table>
+<div class="bs-page-header">
+    <div>
+        <span class="bs-eyebrow">The hierarchy</span>
+        <h1>Goals</h1>
+        <p>One big goal, broken down into yearly, monthly, weekly, and daily steps.</p>
+    </div>
+</div>
+<section class="goal-feed">
+
+    <div class="goal-compose">
+        <span class="goal-compose-icon" aria-hidden="true">🎯</span>
+        <span class="goal-compose-text">What's a big goal you're working toward?</span>
+        <a href="{% url 'create_goal' %}" class="goal-compose-btn">+ New Goal</a>
+    </div>
+
+    {% if goals %}
+        <div class="thread-list">
+            {% for goal in goals|dictsort:"start_year" %}
+                <details class="thread thread-depth-0" open>
+                    <summary class="thread-summary">
+                        <span class="thread-toggle" aria-hidden="true"></span>
+                        <span class="thread-badge badge-goal">Goal</span>
+                        <a class="thread-title" href="{% url 'edit_goal' goal.id %}">{{ goal.name }}</a>
+                        <span class="thread-actions">
+                            <a href="{% url 'create_yearly_goal' %}?goal={{ goal.id }}" class="thread-add">+ Add yearly goal</a>
+                            <form method="post" action="{% url 'delete_goal' 'main_goal' goal.id %}" class="thread-delete-form" onsubmit="return confirm('Delete this goal and everything nested under it?');">
+                                {% csrf_token %}
+                                <button type="submit" class="thread-delete">Delete</button>
+                            </form>
+                        </span>
+                    </summary>
+
+                    <div class="thread-children">
+                        {% with yearly_goals=goal.yearly_goals.all|dictsort:"year" %}
+                            {% if yearly_goals %}
+                                {% for yearly_goal in yearly_goals %}
+                                    <details class="thread thread-depth-1" open>
+                                        <summary class="thread-summary">
+                                            <span class="thread-toggle" aria-hidden="true"></span>
+                                            <span class="thread-badge badge-yearly">Yearly</span>
+                                            <a class="thread-title {% if yearly_goal.completed %}is-complete{% endif %}" href="{% url 'edit_yearly_goal' yearly_goal.id %}">{{ yearly_goal.goal }}</a>
+                                            {% if yearly_goal.completed %}<span class="thread-check" title="Completed">✓</span>{% endif %}
+                                            <span class="thread-actions">
+                                                <a href="{% url 'create_monthly_goal' %}?year={{ yearly_goal.id }}" class="thread-add">+ Add monthly goal</a>
+                                                <form method="post" action="{% url 'delete_goal' 'yearly' yearly_goal.id %}" class="thread-delete-form" onsubmit="return confirm('Delete this yearly goal and everything nested under it?');">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="thread-delete">Delete</button>
+                                                </form>
+                                            </span>
+                                        </summary>
+
+                                        <div class="thread-children">
+                                            {% with monthly_goals=yearly_goal.monthly_goals.all|dictsort:"month" %}
+                                                {% if monthly_goals %}
+                                                    {% for monthly_goal in monthly_goals %}
+                                                        <details class="thread thread-depth-2" open>
+                                                            <summary class="thread-summary">
+                                                                <span class="thread-toggle" aria-hidden="true"></span>
+                                                                <span class="thread-badge badge-monthly">Monthly</span>
+                                                                <a class="thread-title {% if monthly_goal.completed %}is-complete{% endif %}" href="{% url 'edit_monthly_goal' monthly_goal.id %}">{{ monthly_goal.goal }}</a>
+                                                                {% if monthly_goal.completed %}<span class="thread-check" title="Completed">✓</span>{% endif %}
+                                                                <span class="thread-actions">
+                                                                    <a href="{% url 'create_weekly_goal' %}?month={{ monthly_goal.id }}" class="thread-add">+ Add weekly goal</a>
+                                                                    <form method="post" action="{% url 'delete_goal' 'monthly' monthly_goal.id %}" class="thread-delete-form" onsubmit="return confirm('Delete this monthly goal and everything nested under it?');">
+                                                                        {% csrf_token %}
+                                                                        <button type="submit" class="thread-delete">Delete</button>
+                                                                    </form>
+                                                                </span>
+                                                            </summary>
+
+                                                            <div class="thread-children">
+                                                                {% with weekly_goals=monthly_goal.weekly_goals.all|dictsort:"start_date" %}
+                                                                    {% if weekly_goals %}
+                                                                        {% for weekly_goal in weekly_goals %}
+                                                                            <details class="thread thread-depth-3" open>
+                                                                                <summary class="thread-summary">
+                                                                                    <span class="thread-toggle" aria-hidden="true"></span>
+                                                                                    <span class="thread-badge badge-weekly">Weekly</span>
+                                                                                    <a class="thread-title {% if weekly_goal.completed %}is-complete{% endif %}" href="{% url 'edit_weekly_goal' weekly_goal.id %}">{{ weekly_goal.goal }}</a>
+                                                                                    {% if weekly_goal.completed %}<span class="thread-check" title="Completed">✓</span>{% endif %}
+                                                                                    <span class="thread-actions">
+                                                                                        <a href="{% url 'create_day_goal' %}?week={{ weekly_goal.id }}" class="thread-add">+ Add day goal</a>
+                                                                                        <form method="post" action="{% url 'delete_goal' 'weekly' weekly_goal.id %}" class="thread-delete-form" onsubmit="return confirm('Delete this weekly goal and everything nested under it?');">
+                                                                                            {% csrf_token %}
+                                                                                            <button type="submit" class="thread-delete">Delete</button>
+                                                                                        </form>
+                                                                                    </span>
+                                                                                </summary>
+
+                                                                                <div class="thread-children">
+                                                                                    {% with day_goals=weekly_goal.day_goal.all|dictsort:"date" %}
+                                                                                        {% if day_goals %}
+                                                                                            {% for day_goal in day_goals %}
+                                                                                                <details class="thread thread-depth-4" open>
+                                                                                                    <summary class="thread-summary">
+                                                                                                        <span class="thread-toggle" aria-hidden="true"></span>
+                                                                                                        <span class="thread-badge badge-day">Day</span>
+                                                                                                        <a class="thread-title {% if day_goal.completed %}is-complete{% endif %}" href="{% url 'edit_day_goal' day_goal.id %}">{{ day_goal.goal }}</a>
+                                                                                                        {% if day_goal.completed %}<span class="thread-check" title="Completed">✓</span>{% endif %}
+                                                                                                        {% if day_goal.date %}<span class="thread-meta">{{ day_goal.date }}</span>{% endif %}
+                                                                                                        <span class="thread-actions">
+                                                                                                            <a href="{% url 'create_daily_goal' %}?day={{ day_goal.id }}" class="thread-add">+ Add task</a>
+                                                                                                            <form method="post" action="{% url 'delete_goal' 'days' day_goal.id %}" class="thread-delete-form" onsubmit="return confirm('Delete this day goal and everything nested under it?');">
+                                                                                                                {% csrf_token %}
+                                                                                                                <button type="submit" class="thread-delete">Delete</button>
+                                                                                                            </form>
+                                                                                                        </span>
+                                                                                                    </summary>
+
+                                                                                                    <div class="thread-children">
+                                                                                                        {% with daily_goals=day_goal.daily_goals.all|dictsort:"start_time" %}
+                                                                                                            {% if daily_goals %}
+                                                                                                                {% for daily_goal in daily_goals %}
+                                                                                                                    <div class="thread thread-depth-5 thread-leaf">
+                                                                                                                        <div class="thread-summary">
+                                                                                                                            <span class="thread-badge badge-task">Task</span>
+                                                                                                                            <a class="thread-title {% if daily_goal.completed %}is-complete{% endif %}" href="{% url 'edit_daily_goal' daily_goal.id %}">{{ daily_goal.goal }}</a>
+                                                                                                                            {% if daily_goal.completed %}<span class="thread-check" title="Completed">✓</span>{% endif %}
+                                                                                                                            {% if daily_goal.start_time %}
+                                                                                                                                <span class="thread-meta">{{ daily_goal.start_time }}–{{ daily_goal.end_time }}</span>
+                                                                                                                            {% endif %}
+                                                                                                                            <span class="thread-actions">
+                                                                                                                                <form method="post" action="{% url 'delete_goal' 'daily' daily_goal.id %}" class="thread-delete-form" onsubmit="return confirm('Delete this task?');">
+                                                                                                                                    {% csrf_token %}
+                                                                                                                                    <button type="submit" class="thread-delete">Delete</button>
+                                                                                                                                </form>
+                                                                                                                            </span>
+                                                                                                                        </div>
+                                                                                                                    </div>
+                                                                                                                {% endfor %}
+                                                                                                            {% else %}
+                                                                                                                <p class="thread-empty">No tasks yet — <a href="{% url 'create_daily_goal' %}?day={{ day_goal.id }}">add one</a>.</p>
+                                                                                                            {% endif %}
+                                                                                                        {% endwith %}
+                                                                                                    </div>
+                                                                                                </details>
+                                                                                            {% endfor %}
+                                                                                        {% else %}
+                                                                                            <p class="thread-empty">No day goals yet — <a href="{% url 'create_day_goal' %}?week={{ weekly_goal.id }}">add one</a>.</p>
+                                                                                        {% endif %}
+                                                                                    {% endwith %}
+                                                                                </div>
+                                                                            </details>
+                                                                        {% endfor %}
+                                                                    {% else %}
+                                                                        <p class="thread-empty">No weekly goals yet — <a href="{% url 'create_weekly_goal' %}?month={{ monthly_goal.id }}">add one</a>.</p>
+                                                                    {% endif %}
+                                                                {% endwith %}
+                                                            </div>
+                                                        </details>
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <p class="thread-empty">No monthly goals yet — <a href="{% url 'create_monthly_goal' %}?year={{ yearly_goal.id }}">add one</a>.</p>
+                                                {% endif %}
+                                            {% endwith %}
+                                        </div>
+                                    </details>
+                                {% endfor %}
+                            {% else %}
+                                <p class="thread-empty">No yearly goals yet — <a href="{% url 'create_yearly_goal' %}?goal={{ goal.id }}">add one</a>.</p>
+                            {% endif %}
+                        {% endwith %}
+                    </div>
+                </details>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="goal-empty-state">
+            <p>No goals yet. Start with one big goal — you can break it down into yearly, monthly, weekly, and daily steps right underneath it.</p>
+            <a href="{% url 'create_goal' %}" class="goal-compose-btn">+ Add your first goal</a>
+        </div>
+    {% endif %}
+
 </section>
 {% endblock %}

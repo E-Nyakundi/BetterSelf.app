@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}M-Pesa{% endblock %}
+{% block page_title %}M-Pesa{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'inventory_dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'mpesa.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="bs-page-header">
+    <div>
+        <span class="bs-eyebrow">Finance &amp; Wealth</span>
+        <h1>M-Pesa</h1>
+        <p>Your deposit history and money-in trends, pulled from Daraja callbacks.</p>
+    </div>
+    <div class="bs-page-header-actions">
+        <a href="{% url 'mpesa-transaction-list' %}" class="bs-btn bs-btn--ghost">
+            <i class="fa-solid fa-list"></i> Full history
+        </a>
+        <a href="{% url 'mpesa-deposit-page' %}" class="bs-btn bs-btn--primary">
+            <i class="fa-solid fa-plus"></i> New deposit
+        </a>
+    </div>
+</div>
+
+{% if not email_verified or not verified_phone %}
+<div class="mpesa-banner">
+    <i class="fa-solid fa-shield-halved"></i>
+    <div class="mpesa-banner-body">
+        <strong>Verification needed before you can deposit</strong>
+        <span>
+            {% if not email_verified %}Confirm your email address{% if not verified_phone %} and verify a phone number{% endif %}{% else %}Verify the phone number you'll deposit from{% endif %}
+            — this keeps M-Pesa prompts from being sent to numbers you don't control.
+        </span>
+    </div>
+    <a href="{% url 'mpesa-verify-page' %}" class="bs-btn bs-btn--secondary bs-btn--sm">Verify now</a>
+</div>
+{% endif %}
+
+{% if summary.has_activity %}
+
+<!-- ── STAT CARDS ── -->
+<div class="bs-grid bs-grid--4">
+    <div class="bs-card mpesa-stat-card">
+        <div class="mpesa-stat-icon"><i class="fa-solid fa-sack-dollar"></i></div>
+        <div class="bs-card-label">Total deposited</div>
+        <div class="bs-card-value">KES {{ summary.total_deposited|floatformat:0 }}</div>
+        <div class="bs-card-sub">{{ summary.success_count }} successful deposit{{ summary.success_count|pluralize }}</div>
+    </div>
+
+    <div class="bs-card mpesa-stat-card">
+        <div class="bs-card-label">Success rate</div>
+        <div class="bs-row" style="margin-top: var(--space-2);">
+            <div class="bs-ring" style="--ring-size: 56px; --pct: {{ summary.success_rate|default:0 }};">
+                <span class="bs-ring-label" style="font-size: var(--text-xs);">{{ summary.success_rate|default:"—" }}%</span>
+            </div>
+            <div>
+                <div class="bs-card-sub" style="margin-top:0;">{{ summary.total_count }} attempt{{ summary.total_count|pluralize }} total</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bs-card mpesa-stat-card">
+        <div class="mpesa-stat-icon"><i class="fa-solid fa-clock"></i></div>
+        <div class="bs-card-label">Pending</div>
+        <div class="bs-card-value">{{ summary.pending_count }}</div>
+        <div class="bs-card-sub">{% if summary.failed_count %}{{ summary.failed_count }} failed attempt{{ summary.failed_count|pluralize }}{% else %}No failed attempts{% endif %}</div>
+    </div>
+
+    <div class="bs-card mpesa-stat-card">
+        <div class="mpesa-stat-icon"><i class="fa-solid fa-history"></i></div>
+        <div class="bs-card-label">Last activity</div>
+        {% with txn=summary.last_transaction %}
+        <div class="bs-card-value" style="font-size: var(--text-lg);">KES {{ txn.amount|floatformat:0 }}</div>
+        <div class="bs-card-sub">
+            <span class="bs-badge bs-badge--{{ txn.status|lower }}">{{ txn.get_status_display }}</span>
+            · {{ txn.created_at|timesince }} ago
+        </div>
+        {% endwith %}
+    </div>
+</div>
+
+<!-- ── 14-day TREND CHART ── -->
+<div class="bs-card mpesa-trend-card">
+    <div class="bs-card-header">
+        <h3><i class="fa-solid fa-chart-area"></i> Last 14 days</h3>
+        <a href="{% url 'mpesa-transaction-list' %}" class="bs-card-link">View full history →</a>
+    </div>
+    <div style="height: 160px; margin-top: var(--space-3);">
+        <canvas id="hubTrendChart" style="width:100%; height:160px;"></canvas>
+    </div>
+</div>
+
+<div class="mpesa-hub-columns">
+    <!-- Recent transactions table -->
+    <div class="bs-card bs-card--table">
+        <div class="bs-card-header" style="padding: var(--space-6) var(--space-6) 0;">
+            <h3><i class="fa-solid fa-receipt"></i> Recent transactions</h3>
+            <a href="{% url 'mpesa-transaction-list' %}" class="bs-card-link">View all →</a>
+        </div>
+        <table class="table inventory-table" style="margin-top: var(--space-4);">
+            <thead>
+                <tr>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Goal</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for txn in recent_transactions %}
+                <tr>
+                    <td class="txn-amount">KES {{ txn.amount|floatformat:0 }}</td>
+                    <td><span class="bs-badge bs-badge--{{ txn.status|lower }}">{{ txn.get_status_display }}</span></td>
+                    <td>{{ txn.financial_goal.name|default:"—" }}</td>
+                    <td class="muted" title="{{ txn.created_at }}">{{ txn.created_at|timesince }} ago</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Side cards: verification + fund a goal -->
+    <div>
+        <div class="bs-card mpesa-side-card">
+            <div class="bs-card-header">
+                <h3><i class="fa-solid fa-shield-check"></i> Verification</h3>
+            </div>
+            <div class="bs-row" style="justify-content: space-between; margin-bottom: var(--space-3);">
+                <span class="muted">Email</span>
+                {% if email_verified %}
+                    <span class="mpesa-status-pill mpesa-status-pill--ok"><i class="fa-solid fa-check"></i> Verified</span>
+                {% else %}
+                    <span class="mpesa-status-pill mpesa-status-pill--warn"><i class="fa-solid fa-triangle-exclamation"></i> Pending</span>
+                {% endif %}
+            </div>
+            <div class="bs-row" style="justify-content: space-between;">
+                <span class="muted">Phone</span>
+                {% if verified_phone %}
+                    <span class="mpesa-status-pill mpesa-status-pill--ok"><i class="fa-solid fa-check"></i> {{ verified_phone.phone_number }}</span>
+                {% else %}
+                    <span class="mpesa-status-pill mpesa-status-pill--warn"><i class="fa-solid fa-triangle-exclamation"></i> Not verified</span>
+                {% endif %}
+            </div>
+            {% if not email_verified or not verified_phone %}
+            <a href="{% url 'mpesa-verify-page' %}" class="bs-btn bs-btn--secondary bs-btn--sm" style="margin-top: var(--space-4); width: 100%;">Verify</a>
+            {% endif %}
+        </div>
+
+        <div class="bs-card mpesa-side-card">
+            <div class="bs-card-header">
+                <h3><i class="fa-solid fa-bullseye"></i> Fund a goal</h3>
+            </div>
+            {% if goals %}
+                {% for goal in goals|slice:":4" %}
+                <div class="mpesa-goal-row">
+                    <a href="{% url 'mpesa-deposit-page' %}?goal={{ goal.pk }}">{{ goal.name }}</a>
+                    <span class="muted">
+                        {% with pct=goal.progress_percentage %}{% if pct != None %}{{ pct }}%{% else %}—{% endif %}{% endwith %}
+                    </span>
+                </div>
+                {% endfor %}
+                {% if goals|length > 4 %}
+                <a href="{% url 'financial-goal-list' %}" class="bs-card-link" style="display:block; margin-top: var(--space-3); font-size: var(--text-sm);">View all goals →</a>
+                {% endif %}
+            {% else %}
+                <p class="muted">No financial goals yet. <a href="{% url 'financial-goal-create' %}">Create one</a> to deposit straight toward a target.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% else %}
+
+<div class="bs-empty">
+    <i class="fa-solid fa-mobile-screen-button" style="font-size: 2.5rem; color: var(--color-ink-faint); margin-bottom: var(--space-4);"></i>
+    <h3>No M-Pesa activity yet</h3>
+    <p>Once you verify your phone, your deposits and trends will show up here.</p>
+    {% if email_verified and verified_phone %}
+        <a href="{% url 'mpesa-deposit-page' %}" class="bs-btn bs-btn--primary" style="margin-top: var(--space-4);">Make your first deposit</a>
+    {% else %}
+        <a href="{% url 'mpesa-verify-page' %}" class="bs-btn bs-btn--primary" style="margin-top: var(--space-4);">Verify your phone</a>
+    {% endif %}
+</div>
+
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+{% if summary.has_activity %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+(function() {
+    const trend = {{ summary.trend|safe }};
+    const el = document.getElementById('hubTrendChart');
+    if (!el || !trend.length) return;
+
+    const accent = getComputedStyle(document.documentElement).getPropertyValue('--color-accent').trim() || '#4f46e5';
+    const inkFaint = getComputedStyle(document.documentElement).getPropertyValue('--color-ink-faint').trim() || '#bbb';
+
+    new Chart(el, {
+        type: 'bar',
+        data: {
+            labels: trend.map(d => d.label),
+            datasets: [{
+                data: trend.map(d => Number(d.amount) || 0),
+                backgroundColor: accent + 'bb',
+                borderRadius: 4,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label: ctx => ' KES ' + ctx.parsed.y.toLocaleString() } }
+            },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: inkFaint, font: { size: 11 }, maxRotation: 0 } },
+                y: { grid: { color: 'rgba(0,0,0,0.05)', drawTicks: false }, ticks: { color: inkFaint, font: { size: 11 }, callback: v => 'KES ' + v.toLocaleString() }, beginAtZero: true }
+            }
+        }
+    });
+})();
+</script>
+{% endif %}
+{% endblock %}

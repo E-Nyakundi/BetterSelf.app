@@ -1,25 +1,29 @@
 {% extends "tm_base.html" %}
 {% load static %}
 
+{% block title %}Schedule{% endblock %}
+{% block page_title %}Schedule{% endblock %}
 {% block head %}
-<link rel="stylesheet" href="{% static 'tm_base.css' %}">
 <link rel="stylesheet" href="{% static 'schedule.css' %}">
 {% endblock %}
 
-{% block title %}Daily Schedule{% endblock %}
-
 {% block content %}
+    <div class="bs-page-header">
+        <div>
+            <span class="bs-eyebrow">Today's plan</span>
+            <h1>{{ day }}, {{ date }}</h1>
+        </div>
+    </div>
+
     <div class="head">
-        <h1>Schedule for {{day}}, {{ date }}</h1>
-        
-        <!-- Date Picker -->
-        <form method="GET" action="{% url 'scheduller' %}" class="mb-4">
-            <label for="date" class="form-label">Select Date:</label>
-            <input type="date" id="date" name="date" value="{{ date|date:'Y-m-d' }}" class="form-control">
-            <button type="submit" class="btn btn-primary mt-2">View Schedule</button>
+        <form method="GET" action="{% url 'scheduller' %}">
+            <label for="date">Jump to a date</label>
+            <input type="date" id="date" name="date" value="{{ date|date:'Y-m-d' }}">
+            <button type="submit" class="bs-btn bs-btn--secondary">View schedule</button>
         </form>
     </div>
-    <!-- Schedule Table -->
+
+    {% if schedule %}
     <table class="table table-bordered table-striped">
         <thead class="table-dark">
             <tr>
@@ -36,4 +40,11 @@
             {% endfor %}
         </tbody>
     </table>
+    {% else %}
+    <div class="bs-empty">
+        <h3>Nothing scheduled</h3>
+        <p>No goals or routines fall on this day yet. Add an event or check your routines.</p>
+        <a href="{% url 'add_event' %}" class="bs-btn bs-btn--primary">Add an event</a>
+    </div>
+    {% endif %}
 {% endblock %}

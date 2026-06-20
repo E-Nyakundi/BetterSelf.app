@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Add Category{% endblock %}
+{% block page_title %}Add category{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'item_form.css' %}">
+    <link rel="stylesheet" href="{% static 'category_list.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="bs-page-header">
+    <div>
+        <span class="bs-eyebrow">Inventory</span>
+        <h1>Add category</h1>
+        <p>Give it a name and pick an icon — or upload your own image.</p>
+    </div>
+</div>
+<div class="inventory-form-page">
+    <form method="post" class="inventory-form" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+            <div class="form-errors">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        {% for field in form %}
+            {% if field.name == 'name' or field.name == 'parent' %}
+                <div class="form-field">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% for error in field.errors %}
+                        <span class="field-error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endfor %}
+
+        <div class="form-field">
+            <label>{{ form.icon.label }}</label>
+            <div class="category-icon-grid">
+                <ul>
+                    {% for radio in form.icon %}
+                        <li>
+                            <label class="icon-tile">
+                                {{ radio.tag }}
+                                <i class="fa-solid fa-{{ radio.data.value }}"></i>
+                                <span>{{ radio.choice_label }}</span>
+                            </label>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% if form.icon.help_text %}<small>{{ form.icon.help_text }}</small>{% endif %}
+            {% for error in form.icon.errors %}
+                <span class="field-error">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <div class="form-field">
+            <label>Custom image (optional)</label>
+            <div class="capture-field" data-capture="photo">
+                <div class="capture-preview" data-role="preview">
+                    {% if form.instance.image %}<img class="capture-preview-media" src="{{ form.instance.image.url }}" alt="Current category image">{% endif %}
+                </div>
+                <div class="capture-actions">
+                    <button type="button" class="capture-btn capture-btn--primary" data-action="open-camera">
+                        <i class="fa-solid fa-camera"></i> Take photo
+                    </button>
+                    <label class="capture-btn capture-btn--ghost">
+                        <i class="fa-solid fa-upload"></i> Upload instead
+                        {{ form.image }}
+                    </label>
+                </div>
+            </div>
+            {% if form.image.help_text %}<small>{{ form.image.help_text }}</small>{% endif %}
+            {% for error in form.image.errors %}
+                <span class="field-error">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="bs-btn bs-btn--primary">Save category</button>
+            <a href="{% url 'category-list' %}" class="bs-btn bs-btn--secondary">Back</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

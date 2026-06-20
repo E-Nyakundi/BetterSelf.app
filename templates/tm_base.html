@@ -1,61 +1,15 @@
-<html lang="en">
+{% extends "base.html" %}
 {% load static %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{% static '/tm_base.css' %}">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <title>{% block title %}Base{% endblock %}</title>
-    {% block head %}{% endblock %}
-</head>
+{% block head %}
+    {{ block.super }}
+{% endblock %}
 
-<body>
-    <header>
-        {% block header %}
-            <nav class="main-nav">
-                <ul>
-                    <li><a href="{% url 'dashboard' %}">ACCOUNTS</a></li>
-                    <li><a href="{% url 'tm_dashboard' %}">TIME</a></li>
-                    <li><a href="#">FINANCES</a></li>
-                    <li><a href="#">WELLBEING</a></li>
-                    <li><a href="#">INVENTORY</a></li>
-                    <li><a href="#">JOURNAL</a></li>
-                </ul>
-                <ul class="sub_nav">
-                    <li><a href="{% url 'tm_dashboard' %}"><img class="bell2" src="{% static '/bell2.1.png' %}"></a></li>
-                    {% if request.user.is_authenticated %}
-                        <li><a href="{% url 'edit_profile' %}">
-                            {% if request.user.profile.profile_img %}
-                                <img class="profile1" src="{{ request.user.profile.profile_img.url }}" alt="{{ request.user.username }}'s profile image">
-                            {% else %}
-                                <img class="profile1" src="{% static 'profile1.1.png' %}" alt="Default profile image">
-                            {% endif %}
-                        </a></li>
-                    {% else %}
-                        <li><a href="{% url 'login' %}">
-                            <img class="profile1" src="{% static 'profile1.1.png' %}" alt="Default profile image">
-                        </a></li>
-                    {% endif %}
-                </ul>
-            </nav>
-            <nav class="tm-nav">
-                <ul>
-                    <li><a href="{% url 'scheduller' %}">Schedule</a></li>
-                    <li><a href="{% url 'routine' %}">Routines</a></li>
-                    <li><a href="{% url 'goals' %}">Goals</a></li>
-                    <li><a href="{% url 'add_event' %}">Events</a></li>
-                </ul>
-            </nav>
-        {% endblock %}
-    </header>
-    <main>
-        {% block content %}
-        {% endblock %}
-    </main>
-    <footer>
-        {% block footer %}
-        {% endblock %}
-    </footer>
-</body>
-</html>
+{% block topbar_actions %}
+    <nav class="tm-subnav">
+        <a href="{% url 'scheduller' %}" class="tm-subnav-link {% if request.resolver_match.url_name == 'scheduller' %}is-active{% endif %}">Schedule</a>
+        <a href="{% url 'routine' %}" class="tm-subnav-link {% if request.resolver_match.url_name == 'routine' or request.resolver_match.url_name == 'edit_routine' %}is-active{% endif %}">Routines</a>
+        <a href="{% url 'goals' %}" class="tm-subnav-link {% if 'goal' in request.resolver_match.url_name|default:'' %}is-active{% endif %}">Goals</a>
+        <a href="{% url 'add_event' %}" class="tm-subnav-link {% if request.resolver_match.url_name == 'add_event' %}is-active{% endif %}">Events</a>
+    </nav>
+{% endblock %}

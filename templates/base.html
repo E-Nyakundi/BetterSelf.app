@@ -1,51 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
 {% load static %}
+
 <head>
-    {% block head %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{% static 'tm_base.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="{% static 'design-system.css' %}">
+    <link rel="stylesheet" href="{% static 'site-animations.css' %}">
+    <link rel="stylesheet" href="{% static 'media-capture.css' %}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <title>{% block title %}Base{% endblock %}</title>
-    {% endblock %}
+    <title>{% block title %}LifeApp{% endblock %}</title>
+    {% block head %}{% endblock %}
 </head>
+
 <body>
-    {% block body %}
-    <header>
+    {% if messages %}
+        <section class="messages">
+            {% for message in messages %}
+                <p class="{{ message.tags }}">{{ message }}</p>
+            {% endfor %}
+        </section>
+    {% endif %}
+
+    <div class="app-shell">
         {% block header %}
-        <nav class="main-nav">
-            <ul>
-                <li><a href="{% url 'dashboard' %}">ACCOUNTS</a></li>
-                <li><a href="{% url 'tm_dashboard' %}">TIME</a></li>
-                <li><a href="">FINANCES</a></li>
-                <li><a href="">WELLBEING</a></li>
-                <li><a href="">INVENTORY</a></li>
-                <li><a href="">JOURNAL</a></li>
-            </ul>
-            <ul class="sub_nav">
-                <li>
-                    <a href="{% url 'tm_dashboard' %}">
-                        <img class="bell2" src="{% static 'bell2.1.png' %}" alt="Notifications">
-                    </a>
-                </li>
-                <li>
-                    {% if request.user.is_authenticated and request.user.profile.profile_img %}
-                        <a href="{% url 'tm_dashboard' %}">
-                            <img class="profile1" src="{{ request.user.profile.profile_img.url }}" alt="{{ request.user.username }}'s profile image">
-                        </a>
-                    {% else %}
-                        <a href="{% url 'tm_dashboard' %}">
-                            <img class="profile1" src="{% static 'profile1.1.png' %}" alt="Default profile image">
-                        </a>
-                    {% endif %}
-                </li>
-            </ul>
-        </nav>
+            {% include "includes/main_nav.html" %}
         {% endblock %}
-    </header>
-    {% block content %}{% endblock %}
-    {% block footer %}{% endblock %}
-    {% endblock %}
+
+        <div class="app-main">
+            <div class="app-topbar">
+                <div class="bs-row">
+                    <button type="button" class="app-menu-toggle" id="app-menu-toggle-btn" aria-label="Open menu">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <span class="app-topbar-title">{% block page_title %}{% endblock %}</span>
+                </div>
+                <div class="app-topbar-actions">
+                    {% block topbar_actions %}{% endblock %}
+                    <button type="button" class="theme-toggle" id="theme-toggle-btn" aria-label="Toggle dark mode">
+                        <i class="fa-solid fa-moon"></i>
+                        <i class="fa-solid fa-sun"></i>
+                    </button>
+                </div>
+            </div>
+
+            <main class="app-content">
+                <div class="app-content-inner">
+                    {% block content %}
+                    {% endblock %}
+                </div>
+            </main>
+
+            {% block footer %}{% endblock %}
+        </div>
+    </div>
+
+    {% include "includes/app_shell_scripts.html" %}
+    <script src="{% static 'site-animations.js' %}"></script>
+    <script src="{% static 'media-capture.js' %}"></script>
+    {% block scripts %}{% endblock %}
 </body>
 </html>

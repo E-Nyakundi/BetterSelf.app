@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ goal.name }}{% endblock %}
+{% block page_title %}{{ goal.name }}{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'finance_form.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="finance-form-page">
+    <div class="form-header">
+        <h2>{{ goal.name }}</h2>
+        <div class="form-actions compact">
+            <a href="{% url 'financial-goal-edit' goal.pk %}" class="bs-btn bs-btn--warning">Edit</a>
+            <a href="{% url 'financial-goal-delete' goal.pk %}" class="bs-btn bs-btn--danger">Delete goal</a>
+        </div>
+    </div>
+
+    <dl class="detail-list">
+        <dt>Category</dt>
+        <dd>{{ goal.get_category_display|default:"Not set" }}</dd>
+        <dt>Target amount</dt>
+        <dd>KES {{ goal.target_amount|floatformat:0 }}</dd>
+        <dt>Saved so far</dt>
+        <dd>KES {{ goal.current_amount|floatformat:0 }}</dd>
+        <dt>Remaining</dt>
+        <dd>KES {{ goal.remaining_amount|floatformat:0 }}</dd>
+        <dt>Progress</dt>
+        <dd>
+            {% with pct=goal.progress_percentage %}
+                {% if pct != None %}{{ pct }}%{% else %}Not started{% endif %}
+            {% endwith %}
+        </dd>
+        <dt>Target date</dt>
+        <dd>{{ goal.target_date|default:"Not set" }}</dd>
+        <dt>Created</dt>
+        <dd>{{ goal.created_at }}</dd>
+        <dt>Last updated</dt>
+        <dd>{{ goal.updated_at }}</dd>
+    </dl>
+
+    <a href="{% url 'financial-goal-list' %}" class="bs-btn bs-btn--secondary">Back to goals</a>
+</div>
+{% endblock %}

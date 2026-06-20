@@ -1,0 +1,332 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}M-Pesa Transactions{% endblock %}
+{% block page_title %}Transactions{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'inventory_dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'mpesa.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="bs-page-header">
+    <div>
+        <span class="bs-eyebrow">Finance &amp; Wealth · M-Pesa</span>
+        <h1>Transaction History</h1>
+        <p>Your personal financial data — every deposit, every shilling, all yours.</p>
+    </div>
+    <div class="bs-page-header-actions">
+        <a href="{% url 'mpesa-hub' %}" class="bs-btn bs-btn--ghost"><i class="fa-solid fa-arrow-left"></i> Overview</a>
+        <a href="{% url 'mpesa-transaction-export' %}?status={{ selected_status }}&financial_goal={{ selected_goal }}" class="bs-btn bs-btn--ghost mpesa-export-link"><i class="fa-solid fa-download"></i> Export CSV</a>
+        <a href="{% url 'mpesa-deposit-page' %}" class="bs-btn bs-btn--primary"><i class="fa-solid fa-plus"></i> New deposit</a>
+    </div>
+</div>
+
+<!-- ── STAT CARDS ── -->
+<div class="bs-grid bs-grid--4" style="margin-bottom: var(--space-6);">
+    <div class="bs-card mpesa-stat-card">
+        <div class="mpesa-stat-icon"><i class="fa-solid fa-sack-dollar"></i></div>
+        <div class="bs-card-label">Total deposited</div>
+        <div class="bs-card-value">KES {{ total_volume|floatformat:0 }}</div>
+        <div class="bs-card-sub">{{ success_count }} successful</div>
+    </div>
+
+    <div class="bs-card mpesa-stat-card">
+        <div class="mpesa-stat-icon"><i class="fa-solid fa-calendar-check"></i></div>
+        <div class="bs-card-label">This month</div>
+        <div class="bs-card-value">KES {{ analytics.this_month_total|floatformat:0 }}</div>
+        <div class="bs-card-sub">
+            {% if analytics.mom_change != None %}
+                {% if analytics.mom_change >= 0 %}
+                    <span style="color: var(--color-success);">▲ {{ analytics.mom_change }}%</span>
+                {% else %}
+                    <span style="color: var(--color-error);">▼ {{ analytics.mom_change|slice:"1:" }}%</span>
+                {% endif %}
+                vs last month
+            {% else %}
+                First month
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="bs-card mpesa-stat-card">
+        <div class="mpesa-stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+        <div class="bs-card-label">Success / Pending / Failed</div>
+        <div class="bs-card-value" style="font-size: var(--text-lg);">{{ success_count }} / {{ pending_count }} / {{ failed_count }}</div>
+        <div class="bs-card-sub">{{ success_count|add:pending_count|add:failed_count }} total attempts</div>
+    </div>
+
+    <div class="bs-card mpesa-stat-card">
+        <div class="mpesa-stat-icon"><i class="fa-solid fa-receipt"></i></div>
+        <div class="bs-card-label">Avg per deposit</div>
+        <div class="bs-card-value">KES {{ analytics.avg_transaction|floatformat:0 }}</div>
+        <div class="bs-card-sub">Successful deposits only</div>
+    </div>
+</div>
+
+<!-- ── CHARTS ROW ── -->
+<div class="mpesa-charts-row" style="display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-4); margin-bottom: var(--space-6);">
+
+    <!-- 30-day trend chart -->
+    <div class="bs-card">
+        <div class="bs-card-header">
+            <h3><i class="fa-solid fa-chart-area"></i> 30-day deposit trend</h3>
+            <span class="bs-card-link">Successful deposits · KES</span>
+        </div>
+        <div class="mpesa-area-chart-wrap" style="height: 180px; position: relative; margin-top: var(--space-3);">
+            <canvas id="trendChart" style="width:100%; height:180px;"></canvas>
+        </div>
+    </div>
+
+    <!-- Goal breakdown donut -->
+    <div class="bs-card">
+        <div class="bs-card-header">
+            <h3><i class="fa-solid fa-chart-pie"></i> By goal</h3>
+        </div>
+        {% if analytics.goal_breakdown %}
+        <div style="display: flex; align-items: center; gap: var(--space-4); margin-top: var(--space-3);">
+            <canvas id="goalChart" style="width: 100px; height: 100px; flex-shrink: 0;"></canvas>
+            <div class="mpesa-legend" style="flex: 1; min-width: 0;">
+                {% for item in analytics.goal_breakdown %}
+                <div class="mpesa-legend-row">
+                    <span class="mpesa-legend-dot" data-idx="{{ forloop.counter0 }}"></span>
+                    <span class="mpesa-legend-name" title="{{ item.name }}">{{ item.name }}</span>
+                    <span class="mpesa-legend-value">KES {{ item.amount|floatformat:0 }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <p class="muted" style="margin-top: var(--space-4);">No goal-linked transactions yet.</p>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- Monthly bar chart -->
+{% if analytics.monthly %}
+<div class="bs-card" style="margin-bottom: var(--space-6);">
+    <div class="bs-card-header">
+        <h3><i class="fa-solid fa-chart-column"></i> Monthly deposits</h3>
+        <span class="bs-card-link">Last 6 months</span>
+    </div>
+    <div style="height: 140px; margin-top: var(--space-3);">
+        <canvas id="monthlyChart" style="width:100%; height:140px;"></canvas>
+    </div>
+</div>
+{% endif %}
+
+<!-- ── FILTER BAR ── -->
+<form method="get" class="bs-filter-row bs-card bs-card--soft" style="margin-bottom: var(--space-4);">
+    <div class="bs-filter-group">
+        <label>Status</label>
+        <select name="status" onchange="this.form.submit()">
+            <option value="">All statuses</option>
+            {% for value, label in status_choices %}
+                <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="bs-filter-group">
+        <label>Goal</label>
+        <select name="financial_goal" onchange="this.form.submit()">
+            <option value="">All goals</option>
+            {% for goal in goals %}
+                <option value="{{ goal.pk }}" {% if selected_goal == goal.pk|stringformat:"s" %}selected{% endif %}>{{ goal.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <a href="{% url 'mpesa-transaction-list' %}" class="bs-btn bs-btn--ghost bs-btn--sm" style="align-self: flex-end;">Clear</a>
+</form>
+
+<!-- ── TABLE ── -->
+{% if transactions %}
+<div class="bs-card bs-card--table">
+    <table class="table inventory-table">
+        <thead>
+            <tr>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Phone</th>
+                <th>Receipt</th>
+                <th>Goal</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for txn in transactions %}
+            <tr class="txn-row txn-row--{{ txn.status|lower }}">
+                <td class="txn-amount">KES {{ txn.amount|floatformat:0 }}</td>
+                <td><span class="bs-badge bs-badge--{{ txn.status|lower }}">{{ txn.get_status_display }}</span></td>
+                <td class="muted">{{ txn.phone_number }}</td>
+                <td class="mono">
+                    {% if txn.mpesa_receipt_number %}
+                        <span data-receipt="{{ txn.mpesa_receipt_number }}">{{ txn.mpesa_receipt_number }}</span>
+                        <button type="button" class="mpesa-copy-receipt" title="Copy receipt number"
+                            onclick="navigator.clipboard.writeText(this.previousElementSibling.dataset.receipt); this.classList.add('is-copied'); this.innerHTML='<i class=\'fa-solid fa-check\'></i>';">
+                            <i class="fa-solid fa-copy"></i>
+                        </button>
+                    {% else %}—{% endif %}
+                </td>
+                <td>
+                    {% if txn.financial_goal %}
+                        <a href="{% url 'financial-goal-detail' txn.financial_goal.pk %}">{{ txn.financial_goal.name }}</a>
+                    {% else %}—{% endif %}
+                </td>
+                <td class="muted" title="{{ txn.created_at }}">
+                    <span>{{ txn.created_at|date:"d M Y" }}</span>
+                    <span class="txn-time">{{ txn.created_at|time:"H:i" }}</span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if is_paginated %}
+<div class="bs-pagination">
+    {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}&status={{ selected_status }}&financial_goal={{ selected_goal }}">← Previous</a>
+    {% endif %}
+    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}&status={{ selected_status }}&financial_goal={{ selected_goal }}">Next →</a>
+    {% endif %}
+</div>
+{% endif %}
+
+{% else %}
+<div class="bs-card bs-empty">
+    <i class="fa-solid fa-receipt" style="font-size: 2rem; color: var(--color-ink-faint); margin-bottom: var(--space-3);"></i>
+    <h3>No transactions {% if selected_status or selected_goal %}match your filters{% else %}yet{% endif %}</h3>
+    <p>{% if selected_status or selected_goal %}Try clearing the filters above.{% else %}Your M-Pesa deposits will appear here once your first payment is confirmed.{% endif %}</p>
+    {% if not selected_status and not selected_goal %}
+    <a href="{% url 'mpesa-deposit-page' %}" class="bs-btn bs-btn--primary" style="margin-top: var(--space-4);">Make your first deposit</a>
+    {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+(function() {
+    const analytics = {{ analytics_json|safe }};
+
+    // Design tokens — match design-system.css
+    const inkSoft = getComputedStyle(document.documentElement).getPropertyValue('--color-ink-soft').trim() || '#888';
+    const inkFaint = getComputedStyle(document.documentElement).getPropertyValue('--color-ink-faint').trim() || '#bbb';
+    const accent = getComputedStyle(document.documentElement).getPropertyValue('--color-accent').trim() || '#4f46e5';
+    const surface = getComputedStyle(document.documentElement).getPropertyValue('--color-surface').trim() || '#fff';
+
+    const PALETTE = [
+        '#4f46e5', '#7c3aed', '#0ea5e9', '#10b981', '#f59e0b',
+        '#ef4444', '#ec4899', '#6366f1',
+    ];
+
+    Chart.defaults.font.family = getComputedStyle(document.documentElement).getPropertyValue('--font-body').trim() || 'system-ui';
+    Chart.defaults.color = inkSoft;
+
+    function gridOpts() {
+        return { color: 'rgba(0,0,0,0.06)', drawTicks: false };
+    }
+    function tickOpts() {
+        return { color: inkFaint, font: { size: 11 } };
+    }
+
+    // ── 30-day area trend ──
+    const trendEl = document.getElementById('trendChart');
+    if (trendEl && analytics.daily_trend && analytics.daily_trend.length) {
+        const labels = analytics.daily_trend.map(d => d.label);
+        const amounts = analytics.daily_trend.map(d => d.amount);
+        new Chart(trendEl, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [{
+                    data: amounts,
+                    fill: true,
+                    tension: 0.4,
+                    borderColor: accent,
+                    backgroundColor: accent + '22',
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
+                    pointBackgroundColor: accent,
+                    borderWidth: 2,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: {
+                    callbacks: { label: ctx => ' KES ' + ctx.parsed.y.toLocaleString() }
+                }},
+                scales: {
+                    x: { grid: gridOpts(), ticks: { ...tickOpts(), maxTicksLimit: 10, maxRotation: 0 } },
+                    y: { grid: gridOpts(), ticks: { ...tickOpts(), callback: v => 'KES ' + v.toLocaleString() }, beginAtZero: true }
+                }
+            }
+        });
+    }
+
+    // ── Goal breakdown donut ──
+    const goalEl = document.getElementById('goalChart');
+    if (goalEl && analytics.goal_breakdown && analytics.goal_breakdown.length) {
+        const gLabels = analytics.goal_breakdown.map(g => g.name);
+        const gAmounts = analytics.goal_breakdown.map(g => g.amount);
+        const gColors = PALETTE.slice(0, gLabels.length);
+
+        // Colour legend dots
+        document.querySelectorAll('.mpesa-legend-dot').forEach((dot, i) => {
+            dot.style.background = gColors[i] || '#ccc';
+        });
+
+        new Chart(goalEl, {
+            type: 'doughnut',
+            data: { labels: gLabels, datasets: [{ data: gAmounts, backgroundColor: gColors, borderWidth: 2, borderColor: surface }] },
+            options: {
+                responsive: false,
+                cutout: '68%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { callbacks: { label: ctx => ' KES ' + ctx.parsed.toLocaleString() } }
+                }
+            }
+        });
+    }
+
+    // ── Monthly bar chart ──
+    const monthlyEl = document.getElementById('monthlyChart');
+    if (monthlyEl && analytics.monthly && analytics.monthly.length) {
+        const mLabels = analytics.monthly.map(m => m.label);
+        const mAmounts = analytics.monthly.map(m => m.amount);
+        new Chart(monthlyEl, {
+            type: 'bar',
+            data: {
+                labels: mLabels,
+                datasets: [{
+                    data: mAmounts,
+                    backgroundColor: accent + 'cc',
+                    borderRadius: 6,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: {
+                    callbacks: { label: ctx => ' KES ' + ctx.parsed.y.toLocaleString() }
+                }},
+                scales: {
+                    x: { grid: { display: false }, ticks: tickOpts() },
+                    y: { grid: gridOpts(), ticks: { ...tickOpts(), callback: v => 'KES ' + v.toLocaleString() }, beginAtZero: true }
+                }
+            }
+        });
+    }
+})();
+</script>
+{% endblock %}

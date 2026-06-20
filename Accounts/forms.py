@@ -1,48 +1,35 @@
 from django import forms
+
 from .models import Profile
-from django.contrib.auth import authenticate
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import User
 
-class CreateUserForm(UserCreationForm):
-    class Meta:
-        model = User
-        fields = ['username', 'email', 'password1', 'password2']
-
-class SocialSignUpForm(forms.Form):
-    username = forms.CharField(disabled=True)
-    email = forms.EmailField(disabled=True)
-    password1 = forms.CharField(widget=forms.PasswordInput)
-    password2 = forms.CharField(widget=forms.PasswordInput)
-
-    def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user', None)
-        super().__init__(*args, **kwargs)
-        if self.user:
-            self.fields['username'].initial = self.user.username
-            self.fields['email'].initial = self.user.email
-
-    def save(self):
-        password = self.cleaned_data['password1']
-        self.user.set_password(password)
-        self.user.save()
-class LoginForm(forms.Form):
-    username = forms.CharField(label='Username', max_length=100)
-    password = forms.CharField(label='Password', widget=forms.PasswordInput)
-
-    def clean(self):
-        cleaned_data = super().clean()
-        username = cleaned_data.get('username')
-        password = cleaned_data.get('password')
-
-        if username and password:
-            user = authenticate(username=username, password=password)
-            if not user or not user.is_active:
-                raise forms.ValidationError("Invalid username or password")
-        return cleaned_data
 
 class ProfileForm(forms.ModelForm):
+    MAX_IMAGE_SIZE = 2 * 1024 * 1024
+    ALLOWED_CONTENT_TYPES = {'image/jpeg', 'image/png', 'image/webp', 'image/gif'}
+
     class Meta:
         model = Profile
-        fields = ["profile_img"]
+        fields = ['profile_img', 'email', 'title']
+        labels = {
+            'profile_img': 'Profile image',
+            'title': 'Profile title',
+        }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs.setdefault('class', 'form-control')
+
+    def clean_profile_img(self):
+        image = self.cleaned_data.get('profile_img')
+        if not image:
+            return image
+
+        if image.size > self.MAX_IMAGE_SIZE:
+            raise forms.ValidationError("Profile image must be 2MB or smaller.")
+
+        content_type = getattr(image, 'content_type', None)
+        if content_type and content_type not in self.ALLOWED_CONTENT_TYPES:
+            raise forms.ValidationError("Upload a JPEG, PNG, WebP, or GIF image.")
+
+        return image

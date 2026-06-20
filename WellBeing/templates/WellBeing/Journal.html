@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %} Journal {% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'journal.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="journal-page">
+    <div class="journal-header">
+        <div>
+            <span class="bs-eyebrow">Reflection</span>
+            <h1>Journal for {{ day }}, {{ date }}</h1>
+        </div>
+        <form method="GET" action="{% url 'journal' %}" class="journal-date-picker">
+            <label for="date">Date</label>
+            <input type="date" id="date" name="date" value="{{ selected_date }}">
+            <button type="submit" class="bs-btn bs-btn--secondary">View</button>
+        </form>
+    </div>
+
+    <div class="journal-layout">
+        <div class="journal-entries">
+            <h2>{% if todays_journals.count > 1 %}Entries{% else %}Entry{% endif %} for this day</h2>
+
+            {% if todays_journals %}
+                <ul class="entry-list">
+                    {% for journal in todays_journals %}
+                        <li class="entry-card">
+                            <div class="entry-card-head">
+                                <span class="entry-time">{{ journal.time_of_day|date:"H:i" }}</span>
+                                {% if journal.mood or journal.energy or journal.focus or journal.sleep_hours %}
+                                <div class="entry-metrics">
+                                    {% if journal.mood %}<span class="entry-metric" title="Mood"><i class="fa-solid fa-face-smile"></i>{{ journal.mood }}/5</span>{% endif %}
+                                    {% if journal.energy %}<span class="entry-metric" title="Energy"><i class="fa-solid fa-bolt"></i>{{ journal.energy }}/5</span>{% endif %}
+                                    {% if journal.focus %}<span class="entry-metric" title="Focus"><i class="fa-solid fa-crosshairs"></i>{{ journal.focus }}/5</span>{% endif %}
+                                    {% if journal.sleep_hours %}<span class="entry-metric" title="Sleep"><i class="fa-solid fa-moon"></i>{{ journal.sleep_hours }}h</span>{% endif %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            {% if journal.entry %}<p class="entry-text">{{ journal.entry|linebreaks }}</p>{% endif %}
+
+                            {% if journal.went_well %}
+                                <div class="entry-reflection went-well">
+                                    <strong>What went well</strong>
+                                    <p>{{ journal.went_well|linebreaks }}</p>
+                                </div>
+                            {% endif %}
+                            {% if journal.needs_improvement %}
+                                <div class="entry-reflection needs-improvement">
+                                    <strong>What needs improvement</strong>
+                                    <p>{{ journal.needs_improvement|linebreaks }}</p>
+                                </div>
+                            {% endif %}
+
+                            {% if journal.image %}
+                                <div class="entry-media">
+                                    <a href="{{ journal.image.url }}" target="_blank" rel="noopener">
+                                        <img class="journal_image" src="{% if journal.thumbnail %}{{ journal.thumbnail.url }}{% else %}{{ journal.image.url }}{% endif %}" alt="Journal image" loading="lazy">
+                                    </a>
+                                </div>
+                            {% endif %}
+                            {% if journal.video %}
+                                <div class="entry-media">
+                                    <video controls width="100%" preload="metadata">
+                                        <source src="{{ journal.video.url }}" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                </div>
+                            {% endif %}
+                            {% if journal.audio %}
+                                <div class="entry-media">
+                                    <audio controls>
+                                        <source src="{{ journal.audio.url }}" type="audio/mpeg">
+                                        Your browser does not support the audio element.
+                                    </audio>
+                                </div>
+                            {% endif %}
+                            {% if journal.document %}
+                                <div class="entry-media">
+                                    <a href="{{ journal.document.url }}" target="_blank"><i class="fa-solid fa-file"></i> Download document</a>
+                                </div>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="bs-empty">
+                    <h3>No entries yet</h3>
+                    <p>Nothing logged for this date. Use the form to add your first reflection.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="journal-form-panel">
+            <h2>{% if form.instance.pk %}Edit{% else %}New{% endif %} reflection</h2>
+            <form method="post" enctype="multipart/form-data" class="journal-form">
+                {% csrf_token %}
+
+                <div class="scale-row">
+                    <div class="scale-field">
+                        <label>Mood</label>
+                        <div class="scale-options">{{ form.mood }}</div>
+                    </div>
+                    <div class="scale-field">
+                        <label>Energy</label>
+                        <div class="scale-options">{{ form.energy }}</div>
+                    </div>
+                    <div class="scale-field">
+                        <label>Focus</label>
+                        <div class="scale-options">{{ form.focus }}</div>
+                    </div>
+                </div>
+
+                <div class="bs-field">
+                    {{ form.sleep_hours.label_tag }}
+                    {{ form.sleep_hours }}
+                </div>
+
+                <div class="bs-field">
+                    {{ form.entry.label_tag }}
+                    {{ form.entry }}
+                </div>
+
+                <div class="bs-field">
+                    {{ form.went_well.label_tag }}
+                    {{ form.went_well }}
+                </div>
+
+                <div class="bs-field">
+                    {{ form.needs_improvement.label_tag }}
+                    {{ form.needs_improvement }}
+                </div>
+
+                <details class="journal-media-toggle" {% if form.instance.image or form.instance.video or form.instance.audio or form.instance.document %}open{% endif %}>
+                    <summary>Add a photo, video, audio, or document</summary>
+
+                    <div class="capture-field" data-capture="photo">
+                        <span class="capture-field-label"><i class="fa-solid fa-camera"></i> Photo</span>
+                        <div class="capture-preview" data-role="preview">
+                            {% if form.instance.image %}<img class="capture-preview-media" src="{{ form.instance.image.url }}" alt="Current photo">{% endif %}
+                        </div>
+                        <div class="capture-actions">
+                            <button type="button" class="capture-btn capture-btn--primary" data-action="open-camera">
+                                <i class="fa-solid fa-camera"></i> Take photo
+                            </button>
+                            <label class="capture-btn capture-btn--ghost">
+                                <i class="fa-solid fa-upload"></i> Upload instead
+                                <input type="file" name="image" accept="image/*" capture="environment">
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="capture-field" data-capture="video">
+                        <span class="capture-field-label"><i class="fa-solid fa-video"></i> Video</span>
+                        <div class="capture-preview" data-role="preview">
+                            {% if form.instance.video %}<video class="capture-preview-media" src="{{ form.instance.video.url }}" controls></video>{% endif %}
+                        </div>
+                        <div class="capture-actions">
+                            <button type="button" class="capture-btn capture-btn--primary" data-action="open-camera">
+                                <i class="fa-solid fa-video"></i> Record video
+                            </button>
+                            <label class="capture-btn capture-btn--ghost">
+                                <i class="fa-solid fa-upload"></i> Upload instead
+                                <input type="file" name="video" accept="video/*" capture="user">
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="capture-field" data-capture="audio">
+                        <span class="capture-field-label"><i class="fa-solid fa-microphone"></i> Audio</span>
+                        <div class="capture-preview" data-role="preview">
+                            {% if form.instance.audio %}<audio class="capture-preview-media" src="{{ form.instance.audio.url }}" controls></audio>{% endif %}
+                        </div>
+                        <div class="capture-actions">
+                            <button type="button" class="capture-btn capture-btn--primary capture-btn--record" data-action="record-audio">
+                                <i class="fa-solid fa-microphone"></i>
+                                <span data-role="label">Record audio</span>
+                                <span class="capture-rec-time" data-role="time" hidden>00:00</span>
+                            </button>
+                            <label class="capture-btn capture-btn--ghost">
+                                <i class="fa-solid fa-upload"></i> Upload instead
+                                <input type="file" name="audio" accept="audio/*" capture="user">
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="bs-field">
+                        {{ form.document.label_tag }}
+                        {{ form.document }}
+                    </div>
+                </details>
+
+                <button type="submit" class="bs-btn bs-btn--primary">Save reflection</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
