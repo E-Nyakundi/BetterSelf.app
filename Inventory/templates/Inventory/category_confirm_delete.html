@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Delete Category{% endblock %}
+{% block page_title %}Delete category{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'item_form.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="inventory-form-page">
+    <h2>Delete category</h2>
+    <p>Delete <strong>{{ object.full_path }}</strong>?</p>
+    <p class="muted">Items in this category will become Uncategorized. Child categories will also be deleted.</p>
+
+    <form method="post" class="form-actions">
+        {% csrf_token %}
+        <button type="submit" class="bs-btn bs-btn--danger">Delete category</button>
+        <a href="{% url 'category-list' %}" class="bs-btn bs-btn--secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

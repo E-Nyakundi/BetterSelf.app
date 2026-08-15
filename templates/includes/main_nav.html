@@ -1,0 +1,67 @@
+{% load static %}
+<aside class="app-sidebar" id="app-sidebar">
+    <a href="{% url 'dashboard' %}" class="app-sidebar-brand">
+        <span class="mark">L</span>
+        <span>LifeApp</span>
+    </a>
+
+    <ul class="app-nav">
+        <li><a href="{% url 'dashboard' %}" class="app-nav-link {% if request.resolver_match.url_name == 'dashboard' %}is-active{% endif %}">
+            <i class="fa-solid fa-house"></i> Dashboard
+        </a></li>
+
+        <li class="app-nav-section-label">Plan</li>
+        <li><a href="{% url 'scheduller' %}" class="app-nav-link {% if request.resolver_match.url_name == 'scheduller' %}is-active{% endif %}">
+            <i class="fa-solid fa-calendar-day"></i> Schedule
+        </a></li>
+        <li><a href="{% url 'routine' %}" class="app-nav-link {% if request.resolver_match.url_name == 'routine' or request.resolver_match.url_name == 'edit_routine' %}is-active{% endif %}">
+            <i class="fa-solid fa-repeat"></i> Routines
+        </a></li>
+        <li><a href="{% url 'goals' %}" class="app-nav-link {% if 'goal' in request.resolver_match.url_name|default:'' %}is-active{% endif %}">
+            <i class="fa-solid fa-bullseye"></i> Goals
+        </a></li>
+        <li><a href="{% url 'add_event' %}" class="app-nav-link {% if request.resolver_match.url_name == 'add_event' %}is-active{% endif %}">
+            <i class="fa-solid fa-calendar-plus"></i> Events
+        </a></li>
+
+        <li class="app-nav-section-label">Reflect</li>
+        <li><a href="{% url 'journal' %}" class="app-nav-link {% if request.resolver_match.url_name == 'journal' or request.resolver_match.url_name == 'edit_journal' %}is-active{% endif %}">
+            <i class="fa-solid fa-feather"></i> Journal
+        </a></li>
+
+        <li class="app-nav-section-label">Manage</li>
+        <li><a href="{% url 'inventory-dashboard' %}" class="app-nav-link {% if 'inventory' in request.resolver_match.url_name|default:'' or 'item' in request.resolver_match.url_name|default:'' or 'category' in request.resolver_match.url_name|default:'' %}is-active{% endif %}">
+            <i class="fa-solid fa-box-archive"></i> Inventory
+        </a></li>
+        <li><a href="{% url 'finance-dashboard' %}" class="app-nav-link {% if 'finance' in request.resolver_match.url_name|default:'' or 'financial-goal' in request.resolver_match.url_name|default:'' %}is-active{% endif %}">
+            <i class="fa-solid fa-wallet"></i> Finance
+        </a></li>
+        <li><a href="{% url 'mpesa-hub' %}" class="app-nav-link app-nav-sublink {% if 'mpesa' in request.resolver_match.url_name|default:'' %}is-active{% endif %}">
+            <i class="fa-solid fa-mobile-screen-button"></i> M-Pesa
+        </a></li>
+    </ul>
+
+    <div class="app-sidebar-footer">
+        {% if request.user.is_authenticated %}
+            <a href="{% url 'edit_profile' %}" class="app-user">
+                {% if request.user.profile.profile_img %}
+                    <img src="{{ request.user.profile.profile_img.url }}" alt="{{ request.user.username }}'s profile image">
+                {% else %}
+                    <img src="{% static 'profile1.1.png' %}" alt="Default profile image">
+                {% endif %}
+                <span>
+                    <span class="app-user-name">{{ request.user.username }}</span><br>
+                    <span class="app-user-meta">View profile</span>
+                </span>
+            </a>
+            <a href="{% url 'logout' %}" class="app-nav-link">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i> Log out
+            </a>
+        {% else %}
+            <a href="{% url 'login' %}" class="app-nav-link">
+                <i class="fa-solid fa-arrow-right-to-bracket"></i> Log in
+            </a>
+        {% endif %}
+    </div>
+</aside>
+<div class="app-sidebar-backdrop" id="app-sidebar-backdrop"></div>

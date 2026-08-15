@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Inventory Dashboard{% endblock %}
+{% block page_title %}Inventory{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'inventory_dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="bs-page-header">
+    <div>
+        <span class="bs-eyebrow">Inventory</span>
+        <h1>Inventory dashboard</h1>
+        <p>A quick view of your items and categories.</p>
+    </div>
+    <div class="bs-page-header-actions">
+        <a href="{% url 'item-create' %}" class="bs-btn bs-btn--primary">Add item</a>
+        <a href="{% url 'category-create' %}" class="bs-btn bs-btn--secondary">Add category</a>
+    </div>
+</div>
+
+<div class="inventory-stats">
+    <section>
+        <span>Total items</span>
+        <strong data-count-up="{{ total_items }}">0</strong>
+        <a href="{% url 'item-list' %}">View items</a>
+    </section>
+    <section>
+        <span>Total categories</span>
+        <strong data-count-up="{{ total_categories }}">0</strong>
+        <a href="{% url 'category-list' %}">View categories</a>
+    </section>
+</div>
+
+<div class="bs-section">
+    <div class="bs-section-title">
+        <h2>Recent items</h2>
+    </div>
+    {% if recent_items %}
+    <table class="table table-striped inventory-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Condition</th>
+                <th>Date Acquired</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in recent_items %}
+                <tr>
+                    <td><a href="{% url 'item-detail' item.pk %}">{{ item.name }}</a></td>
+                    <td>{% if item.category %}{{ item.category.full_path }}{% else %}Uncategorized{% endif %}</td>
+                    <td>{{ item.get_condition_display|default:"Not set" }}</td>
+                    <td>{{ item.date_acquired|default:"Not set" }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="bs-empty">
+        <h3>No items yet</h3>
+        <p>Add your first item to start tracking your inventory.</p>
+        <a href="{% url 'item-create' %}" class="bs-btn bs-btn--primary">Add item</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{% if form.instance.pk %}Edit Item{% else %}Add Item{% endif %}{% endblock %}
+{% block page_title %}{% if form.instance.pk %}Edit item{% else %}Add item{% endif %}{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'item_form.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="inventory-form-page">
+    <div class="form-header">
+        <h2>{% if form.instance.pk %}Edit Item{% else %}Add Item{% endif %}</h2>
+        <a href="{% url 'category-create' %}" class="bs-btn bs-btn--ghost">Add category</a>
+    </div>
+
+    <form method="post" class="inventory-form" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="form-errors">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        {% for field in form %}
+            {% if field.name == 'image' %}
+                <div class="form-field">
+                    <label>{{ field.label }}</label>
+                    <div class="capture-field" data-capture="photo">
+                        <div class="capture-preview" data-role="preview">
+                            {% if form.instance.image %}<img class="capture-preview-media" src="{{ form.instance.image.url }}" alt="Current item photo">{% endif %}
+                        </div>
+                        <div class="capture-actions">
+                            <button type="button" class="capture-btn capture-btn--primary" data-action="open-camera">
+                                <i class="fa-solid fa-camera"></i> Take photo
+                            </button>
+                            <label class="capture-btn capture-btn--ghost">
+                                <i class="fa-solid fa-upload"></i> Upload instead
+                                {{ field }}
+                            </label>
+                        </div>
+                    </div>
+                    {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                    {% for error in field.errors %}
+                        <span class="field-error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="form-field">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                    {% for error in field.errors %}
+                        <span class="field-error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endfor %}
+
+        <div class="form-actions">
+            <button type="submit" class="bs-btn bs-btn--primary">Save item</button>
+            <a href="{% url 'item-list' %}" class="bs-btn bs-btn--secondary">Back</a>
+            {% if form.instance.pk %}
+                <a href="{% url 'item-dispose' form.instance.pk %}" class="bs-btn bs-btn--danger">Dispose item</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+{% endblock %}

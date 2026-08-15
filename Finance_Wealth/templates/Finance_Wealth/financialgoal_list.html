@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Financial Goals{% endblock %}
+{% block page_title %}Financial Goals{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'inventory_dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="bs-page-header">
+    <div>
+        <span class="bs-eyebrow">Finance &amp; Wealth</span>
+        <h1>Financial goals</h1>
+        <p>Every savings, investment, or payoff target you're tracking.</p>
+    </div>
+    <div class="bs-page-header-actions">
+        <a href="{% url 'financial-goal-create' %}" class="bs-btn bs-btn--primary">Add goal</a>
+    </div>
+</div>
+
+{% if goals %}
+<table class="table table-striped inventory-table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Target</th>
+            <th>Saved</th>
+            <th>Progress</th>
+            <th>Target date</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for goal in goals %}
+            <tr>
+                <td><a href="{% url 'financial-goal-detail' goal.pk %}">{{ goal.name }}</a></td>
+                <td>{{ goal.get_category_display|default:"Not set" }}</td>
+                <td>KES {{ goal.target_amount|floatformat:0 }}</td>
+                <td>KES {{ goal.current_amount|floatformat:0 }}</td>
+                <td>
+                    {% with pct=goal.progress_percentage %}
+                        {% if pct != None %}{{ pct }}%{% else %}Not started{% endif %}
+                    {% endwith %}
+                </td>
+                <td>{{ goal.target_date|default:"Not set" }}</td>
+                <td class="table-actions">
+                    <a href="{% url 'financial-goal-detail' goal.pk %}" class="bs-btn bs-btn--sm bs-btn--ghost">View</a>
+                    <a href="{% url 'financial-goal-edit' goal.pk %}" class="bs-btn bs-btn--sm bs-btn--warning">Edit</a>
+                    <a href="{% url 'financial-goal-delete' goal.pk %}" class="bs-btn bs-btn--sm bs-btn--danger">Delete</a>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="bs-empty">
+    <h3>No financial goals yet</h3>
+    <p>Add your first savings or spending goal to start tracking progress.</p>
+    <a href="{% url 'financial-goal-create' %}" class="bs-btn bs-btn--primary">Add goal</a>
+</div>
+{% endif %}
+{% endblock %}

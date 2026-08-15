@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ item.name }}{% endblock %}
+{% block page_title %}{{ item.name }}{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'item_form.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="inventory-form-page">
+    <div class="form-header">
+        <h2>{{ item.name }}</h2>
+        <div class="form-actions compact">
+            <a href="{% url 'item-edit' item.pk %}" class="bs-btn bs-btn--warning">Edit</a>
+            <a href="{% url 'item-dispose' item.pk %}" class="bs-btn bs-btn--danger">Dispose item</a>
+        </div>
+    </div>
+
+    {% if item.image %}
+        <div class="entry-media">
+            <img class="capture-preview-media" src="{{ item.image.url }}" alt="{{ item.name }}" style="max-height:280px;" loading="lazy">
+        </div>
+    {% endif %}
+
+    <dl class="detail-list">
+        <dt>Category</dt>
+        <dd>{% if item.category %}{{ item.category.full_path }}{% else %}Uncategorized{% endif %}</dd>
+        <dt>Condition</dt>
+        <dd>{{ item.get_condition_display|default:"Not set" }}</dd>
+        <dt>Type</dt>
+        <dd>{{ item.item_type|default:"Not set" }}</dd>
+        <dt>Purpose</dt>
+        <dd>{{ item.purpose|default:"Not set" }}</dd>
+        <dt>Date Acquired</dt>
+        <dd>{{ item.date_acquired|default:"Not set" }}</dd>
+        <dt>Created</dt>
+        <dd>{{ item.created_at }}</dd>
+        <dt>Last Updated</dt>
+        <dd>{{ item.updated_at }}</dd>
+    </dl>
+
+    <a href="{% url 'item-list' %}" class="bs-btn bs-btn--secondary">Back to items</a>
+</div>
+{% endblock %}

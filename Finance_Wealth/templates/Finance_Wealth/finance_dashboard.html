@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Finance Dashboard{% endblock %}
+{% block page_title %}Finance{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'inventory_dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'mpesa.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="bs-page-header">
+    <div>
+        <span class="bs-eyebrow">Finance &amp; Wealth</span>
+        <h1>Finance dashboard</h1>
+        <p>Savings and spending goals, plus M-Pesa deposit activity.</p>
+    </div>
+    <div class="bs-page-header-actions">
+        <a href="{% url 'financial-goal-create' %}" class="bs-btn bs-btn--primary">Add goal</a>
+    </div>
+</div>
+
+<div class="inventory-stats">
+    <section>
+        <span>Total goals</span>
+        <strong>{{ total_goals }}</strong>
+        <a href="{% url 'financial-goal-list' %}">View goals</a>
+    </section>
+    <section>
+        <span>Total target</span>
+        <strong>KES {{ total_target|floatformat:0 }}</strong>
+        <a href="{% url 'financial-goal-list' %}">View goals</a>
+    </section>
+    <section>
+        <span>Total saved</span>
+        <strong>KES {{ total_saved|floatformat:0 }}</strong>
+        <a href="{% url 'financial-goal-list' %}">View goals</a>
+    </section>
+</div>
+
+<div class="bs-section">
+    <div class="bs-section-title">
+        <h2>Recent goals</h2>
+    </div>
+    {% if recent_goals %}
+    <table class="table table-striped inventory-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Progress</th>
+                <th>Target date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for goal in recent_goals %}
+                <tr>
+                    <td><a href="{% url 'financial-goal-detail' goal.pk %}">{{ goal.name }}</a></td>
+                    <td>{{ goal.get_category_display|default:"Not set" }}</td>
+                    <td>
+                        {% with pct=goal.progress_percentage %}
+                            {% if pct != None %}{{ pct }}%{% else %}Not started{% endif %}
+                        {% endwith %}
+                    </td>
+                    <td>{{ goal.target_date|default:"Not set" }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="bs-empty">
+        <h3>No financial goals yet</h3>
+        <p>Add your first savings or spending goal to start tracking progress.</p>
+        <a href="{% url 'financial-goal-create' %}" class="bs-btn bs-btn--primary">Add goal</a>
+    </div>
+    {% endif %}
+</div>
+
+<div class="bs-section">
+    <div class="bs-section-title">
+        <h2>M-Pesa</h2>
+        <a href="{% url 'mpesa-hub' %}" class="bs-card-link">Open M-Pesa →</a>
+    </div>
+
+    {% if mpesa.has_activity %}
+    <div class="bs-grid bs-grid--3">
+        <div class="bs-card mpesa-stat-card">
+            <div class="bs-card-label">Total deposited</div>
+            <div class="bs-card-value">KES {{ mpesa.total_deposited|floatformat:0 }}</div>
+            <div class="bs-card-sub">{{ mpesa.success_count }} successful deposit{{ mpesa.success_count|pluralize }}</div>
+        </div>
+        <div class="bs-card mpesa-stat-card">
+            <div class="bs-card-label">Success rate</div>
+            <div class="bs-card-value">{{ mpesa.success_rate|default:"—" }}%</div>
+            <div class="bs-card-sub">{{ mpesa.total_count }} attempt{{ mpesa.total_count|pluralize }} total</div>
+        </div>
+        <div class="bs-card mpesa-stat-card">
+            <div class="bs-card-label">Pending</div>
+            <div class="bs-card-value">{{ mpesa.pending_count }}</div>
+            <div class="bs-card-sub">via Daraja STK push</div>
+        </div>
+    </div>
+    {% else %}
+    <div class="bs-empty">
+        <h3>No M-Pesa activity yet</h3>
+        <p>M-Pesa is its own app under Finance &amp; Wealth — verify your phone there to start tracking deposits.</p>
+        <a href="{% url 'mpesa-hub' %}" class="bs-btn bs-btn--primary">Open M-Pesa</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,232 @@
+/* ==========================================================================
+   Auth & landing — login, signup, and the marketing homepage
+   Replaces the old stock-photo background + glow-button aesthetic with a
+   calm editorial layout consistent with the rest of the app.
+   Builds on design-system.css (loaded via base1.html).
+   ========================================================================== */
+
+body {
+    min-height: 100vh;
+}
+
+/* ---- Landing page ---- */
+
+.landing {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+}
+
+.landing-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: var(--space-16) var(--space-12);
+}
+
+.landing-content h1 {
+    font-size: clamp(2.25rem, 4vw, var(--text-2xl));
+    max-width: 14ch;
+    margin-bottom: var(--space-4);
+}
+
+.landing-lede {
+    font-size: var(--text-md);
+    max-width: 44ch;
+    margin-bottom: var(--space-8);
+}
+
+.landing-actions {
+    display: flex;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+}
+
+.landing-visual {
+    background: var(--color-surface-sunken);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--space-4);
+    padding: var(--space-12);
+}
+
+.landing-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-5, var(--space-4)) var(--space-6);
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    box-shadow: var(--shadow-sm);
+}
+
+.landing-card i {
+    font-size: var(--text-lg);
+    color: var(--color-accent);
+    width: 32px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.landing-card span {
+    font-weight: 600;
+    color: var(--color-ink);
+    font-size: var(--text-sm);
+}
+
+.landing-card--1 { margin-left: 0; }
+.landing-card--2 { margin-left: var(--space-8); }
+.landing-card--3 { margin-left: var(--space-4); }
+
+.landing-footer {
+    position: fixed;
+    bottom: var(--space-4);
+    left: var(--space-12);
+}
+
+.landing-footer p {
+    font-size: var(--text-xs);
+    color: var(--color-ink-faint);
+    margin: 0;
+}
+
+/* ---- Login / signup card ---- */
+
+.auth-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-6);
+    background: var(--color-surface-sunken);
+}
+
+.auth-card {
+    width: min(440px, 100%);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-8);
+    box-shadow: var(--shadow-md);
+}
+
+.auth-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-family: var(--font-display);
+    font-weight: 600;
+    color: var(--color-ink);
+    text-decoration: none;
+    margin-bottom: var(--space-6);
+}
+
+.auth-brand:hover {
+    text-decoration: none;
+}
+
+.auth-brand .mark {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    background: var(--color-accent);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--text-sm);
+    font-weight: 700;
+}
+
+.auth-card h1 {
+    font-size: var(--text-lg);
+    margin-bottom: var(--space-1);
+}
+
+.auth-sub {
+    margin-bottom: var(--space-6);
+    font-size: var(--text-sm);
+}
+
+.auth-card form > p,
+.single-p {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+}
+
+.auth-submit {
+    width: 100%;
+    margin-top: var(--space-2);
+}
+
+.auth-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: var(--space-6) 0;
+    color: var(--color-ink-faint);
+    font-size: var(--text-xs);
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.auth-divider span {
+    padding: 0 var(--space-3);
+}
+
+.auth-social {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.auth-footer-link {
+    text-align: center;
+    margin-top: var(--space-6);
+    margin-bottom: 0;
+    font-size: var(--text-sm);
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+
+@media (max-width: 900px) {
+    .landing {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto;
+    }
+
+    .landing-content {
+        padding: var(--space-12) var(--space-6) var(--space-6);
+    }
+
+    .landing-visual {
+        padding: var(--space-6);
+    }
+
+    .landing-card--2, .landing-card--3 {
+        margin-left: 0;
+    }
+
+    .landing-footer {
+        position: static;
+        text-align: center;
+        padding: var(--space-4);
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-card {
+        padding: var(--space-6);
+    }
+}

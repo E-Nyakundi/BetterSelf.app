@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Verify Phone — M-Pesa{% endblock %}
+{% block page_title %}Verify phone{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'mpesa.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="bs-page-header">
+    <div>
+        <span class="bs-eyebrow">Finance &amp; Wealth · M-Pesa</span>
+        <h1>Verify your phone</h1>
+        <p>One-time setup so STK pushes only ever go to a number you actually control.</p>
+    </div>
+    <div class="bs-page-header-actions">
+        <a href="{% url 'mpesa-hub' %}" class="bs-btn bs-btn--ghost"><i class="fa-solid fa-arrow-left"></i> Back to M-Pesa</a>
+    </div>
+</div>
+
+<div class="bs-card mpesa-verify-card">
+
+    <div class="mpesa-form-error" id="mpesa-verify-error"></div>
+
+    <!-- STEP 1: phone number -->
+    <div class="mpesa-step{% if not verified_phone %} is-active{% endif %}" id="mpesa-step-phone">
+        <div class="bs-field">
+            <label for="mpesa-verify-phone">Phone number</label>
+            <input type="text" id="mpesa-verify-phone" placeholder="07XX XXX XXX" inputmode="numeric">
+            <small>Kenyan M-Pesa number. We'll text a 6-digit code to it.</small>
+        </div>
+        <div class="form-actions">
+            <button type="button" id="mpesa-send-code-btn" class="bs-btn bs-btn--primary" style="width: 100%;">
+                <i class="fa-solid fa-paper-plane"></i> Send code
+            </button>
+        </div>
+    </div>
+
+    <!-- STEP 2: OTP -->
+    <div class="mpesa-step" id="mpesa-step-otp">
+        <div class="mpesa-debug-code" id="mpesa-debug-code" style="display:none;"></div>
+        <p class="muted">Code sent to <strong id="mpesa-otp-phone-label"></strong>. Expires in 10 minutes.</p>
+        <div class="bs-field mpesa-otp-input">
+            <label for="mpesa-otp-code">6-digit code</label>
+            <input type="text" id="mpesa-otp-code" maxlength="6" inputmode="numeric" autocomplete="one-time-code">
+        </div>
+        <div class="form-actions">
+            <button type="button" id="mpesa-verify-code-btn" class="bs-btn bs-btn--primary" style="width: 100%;">
+                <i class="fa-solid fa-check"></i> Verify
+            </button>
+        </div>
+        <p class="muted" style="text-align:center; margin-top: var(--space-4);">
+            Didn't get it? <a href="#" id="mpesa-resend-link">Resend code</a> or
+            <a href="#" id="mpesa-change-number-link">use a different number</a>.
+        </p>
+    </div>
+
+    <!-- STEP 3: done -->
+    <div class="mpesa-step{% if verified_phone %} is-active{% endif %}" id="mpesa-step-done">
+        <div style="text-align:center;">
+            <i class="fa-solid fa-circle-check" style="font-size: var(--text-2xl); color: var(--color-success);"></i>
+            <h3>Phone verified</h3>
+            <p class="muted">
+                {% if verified_phone %}{{ verified_phone.phone_number }} is verified and ready for deposits.{% else %}You're all set to make M-Pesa deposits.{% endif %}
+            </p>
+            <a href="{% url 'mpesa-deposit-page' %}" class="bs-btn bs-btn--primary">Make a deposit</a>
+            {% if verified_phone %}
+            <p class="muted" style="margin-top: var(--space-4);">
+                <a href="#" id="mpesa-verify-different-link">Verify a different number instead</a>
+            </p>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    function getCookie(name) {
+        var match = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+        return match ? match.pop() : '';
+    }
+
+    function showStep(id) {
+        document.querySelectorAll('.mpesa-step').forEach(function (el) { el.classList.remove('is-active'); });
+        document.getElementById(id).classList.add('is-active');
+    }
+
+    function showError(message) {
+        var box = document.getElementById('mpesa-verify-error');
+        box.textContent = message;
+        box.classList.add('is-visible');
+    }
+
+    function clearError() {
+        document.getElementById('mpesa-verify-error').classList.remove('is-visible');
+    }
+
+    function postJson(url, body) {
+        return fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+            body: JSON.stringify(body || {}),
+        }).then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); });
+    }
+
+    var currentPhone = '';
+
+    function sendCode() {
+        var phone = document.getElementById('mpesa-verify-phone').value.trim();
+        if (!phone) { showError('Enter a phone number first.'); return; }
+        clearError();
+        currentPhone = phone;
+
+        postJson('{% url "mpesa-phone-otp-request" %}', { phone_number: phone }).then(function (result) {
+            if (!result.ok) { showError(result.data.error || 'Could not send code.'); return; }
+            document.getElementById('mpesa-otp-phone-label').textContent = result.data.phone_number;
+            var debugBox = document.getElementById('mpesa-debug-code');
+            if (result.data.debug_code) {
+                debugBox.style.display = 'block';
+                debugBox.innerHTML = 'Dev mode (no SMS provider configured) — your code is <strong>' + result.data.debug_code + '</strong>';
+            } else {
+                debugBox.style.display = 'none';
+            }
+            showStep('mpesa-step-otp');
+        });
+    }
+
+    document.getElementById('mpesa-send-code-btn').addEventListener('click', sendCode);
+
+    document.getElementById('mpesa-resend-link').addEventListener('click', function (e) {
+        e.preventDefault();
+        sendCode();
+    });
+
+    document.getElementById('mpesa-change-number-link').addEventListener('click', function (e) {
+        e.preventDefault();
+        clearError();
+        showStep('mpesa-step-phone');
+    });
+
+    document.getElementById('mpesa-verify-code-btn').addEventListener('click', function () {
+        var code = document.getElementById('mpesa-otp-code').value.trim();
+        if (!code) { showError('Enter the 6-digit code.'); return; }
+        clearError();
+
+        postJson('{% url "mpesa-phone-otp-verify" %}', { code: code }).then(function (result) {
+            if (!result.ok) { showError(result.data.error || 'Incorrect code.'); return; }
+            showStep('mpesa-step-done');
+        });
+    });
+
+    var verifyDifferentLink = document.getElementById('mpesa-verify-different-link');
+    if (verifyDifferentLink) {
+        verifyDifferentLink.addEventListener('click', function (e) {
+            e.preventDefault();
+            clearError();
+            showStep('mpesa-step-phone');
+        });
+    }
+})();
+</script>
+{% endblock %}

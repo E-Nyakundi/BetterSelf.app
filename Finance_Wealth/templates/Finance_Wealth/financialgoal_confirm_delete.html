@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Delete Financial Goal{% endblock %}
+{% block page_title %}Delete goal{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'finance_form.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="finance-form-page">
+    <h2>Delete financial goal</h2>
+    <p>Delete <strong>{{ object.name }}</strong> from your financial goals?</p>
+    <p class="muted">This removes the goal record permanently.</p>
+
+    <form method="post" class="form-actions">
+        {% csrf_token %}
+        <button type="submit" class="bs-btn bs-btn--danger">Delete goal</button>
+        <a href="{% url 'financial-goal-detail' object.pk %}" class="bs-btn bs-btn--secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

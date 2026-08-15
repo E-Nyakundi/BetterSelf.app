@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Your Items{% endblock %}
+{% block page_title %}Items{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'item_list.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="bs-page-header">
+    <div>
+        <span class="bs-eyebrow">Inventory</span>
+        <h1>Items</h1>
+        <p>Track what you own, where it belongs, and why it matters.</p>
+    </div>
+    <div class="bs-page-header-actions">
+        <a href="{% url 'item-create' %}" class="bs-btn bs-btn--primary">Add item</a>
+    </div>
+</div>
+
+<form method="get" class="inventory-filters">
+    <label>
+        Search
+        <input type="search" name="q" value="{{ filters.q }}" placeholder="Name, purpose, type, category">
+    </label>
+    <label>
+        Category
+        <select name="category">
+            <option value="">All categories</option>
+            {% for category in categories %}
+                <option value="{{ category.id }}" {% if filters.category == category.id|stringformat:"s" %}selected{% endif %}>
+                    {{ category.full_path }}
+                </option>
+            {% endfor %}
+        </select>
+    </label>
+    <label>
+        Condition
+        <select name="condition">
+            <option value="">All conditions</option>
+            {% for value, label in condition_choices %}
+                <option value="{{ value }}" {% if filters.condition == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <label>
+        Type
+        <input type="search" name="item_type" value="{{ filters.item_type }}" placeholder="Tool, document, device">
+    </label>
+    <div class="filter-actions">
+        <button type="submit" class="bs-btn bs-btn--primary">Filter</button>
+        <a href="{% url 'item-list' %}" class="bs-btn bs-btn--secondary">Reset</a>
+    </div>
+</form>
+
+{% if items %}
+<table class="table table-striped inventory-table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Condition</th>
+            <th>Type</th>
+            <th>Date Acquired</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in items %}
+            <tr>
+                <td class="category-cell">
+                    <span class="category-icon-badge">
+                        {% if item.thumbnail %}
+                            <img src="{{ item.thumbnail.url }}" alt="{{ item.name }}" loading="lazy">
+                        {% elif item.image %}
+                            <img src="{{ item.image.url }}" alt="{{ item.name }}" loading="lazy">
+                        {% elif item.category %}
+                            <i class="fa-solid fa-{{ item.category.icon }}"></i>
+                        {% else %}
+                            <i class="fa-solid fa-box"></i>
+                        {% endif %}
+                    </span>
+                    <a href="{% url 'item-detail' item.pk %}">{{ item.name }}</a>
+                </td>
+                <td>{% if item.category %}{{ item.category.full_path }}{% else %}Uncategorized{% endif %}</td>
+                <td>{{ item.get_condition_display|default:"Not set" }}</td>
+                <td>{{ item.item_type|default:"Not set" }}</td>
+                <td>{{ item.date_acquired|default:"Not set" }}</td>
+                <td class="table-actions">
+                    <a href="{% url 'item-detail' item.pk %}" class="bs-btn bs-btn--sm bs-btn--ghost">View</a>
+                    <a href="{% url 'item-edit' item.pk %}" class="bs-btn bs-btn--sm bs-btn--warning">Edit</a>
+                    <a href="{% url 'item-dispose' item.pk %}" class="bs-btn bs-btn--sm bs-btn--danger">Dispose</a>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="bs-empty">
+    <h3>No items match your filters</h3>
+    <p>Try adjusting your search, or add a new item.</p>
+    <a href="{% url 'item-create' %}" class="bs-btn bs-btn--primary">Add item</a>
+</div>
+{% endif %}
+{% endblock %}

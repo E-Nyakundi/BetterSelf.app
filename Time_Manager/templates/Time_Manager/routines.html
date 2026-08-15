@@ -2,48 +2,104 @@
 {% load static %}
 {% load custom_filters %}
 
+{% block title %}Routines{% endblock %}
+{% block page_title %}Routines{% endblock %}
+
 {% block head %}
     <link rel="stylesheet" href="{% static 'routines.css' %}">
-    {% block title %} Routines {% endblock %}
 {% endblock %}
 
 {% block content %}
-    <section id="create_routinee" class="routine-form">
-        <h1>{% if form.instance.pk %} Edit Routine {% else %} Create Routine {% endif %}</h1>
-        <form method="post">
+<div class="bs-page-header">
+    <div>
+        <span class="bs-eyebrow">Consistency</span>
+        <h1>Routines</h1>
+        <p>Recurring blocks of time that repeat on the days you choose.</p>
+    </div>
+</div>
+
+<section id="create_routinee" class="routine-form">
+    <h1>{% if form.instance.pk %} Edit Routine {% else %} Create Routine {% endif %}</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="bs-btn bs-btn--primary">
+            {% if form.instance.pk %} Update Routine {% else %} Create Routine {% endif %}
+        </button>
+    </form>
+
+    {% if routine %}
+        <form action="{% url 'delete_routine' routine.id %}" method="post" style="display:inline;">
             {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit">{% if form.instance.pk %} Update Routine {% else %} Create Routine {% endif %}</button>
+            <button type="submit" class="bs-btn bs-btn--danger">Delete Routine</button>
         </form>
+    {% endif %}
+</section>
 
-        {% if routine %}
-            <!-- Delete Button -->
-            <form action="{% url 'delete_routine' routine.id %}" method="post" style="display:inline;">
-                {% csrf_token %}
-                <button type="submit" style="background-color: red; color: white;">Delete Routine</button>
-            </form>
-        {% endif %}
-    </section>
+<section class="weekday">
+    <h1>Weekday Routines</h1>
+    {% for routine in routines %}
+        <div class="{{ routine.name|replace_spaces }}-routine">
+            <h2>{{ routine.name }}</h2>
+            <p>{{ routine.instruction }}</p>
+            <p><strong>Time:</strong> {{ routine.start_time|time:"H:i" }} - {{ routine.end_time|time:"H:i" }}</p>
+            <a href="{% url 'edit_routine' routine.id %}">Edit</a>
+        </div>
+    {% empty %}
+        <div class="bs-empty">
+            <h3>No weekday routines yet</h3>
+            <p>Add one above to build a consistent weekday rhythm.</p>
+        </div>
+    {% endfor %}
+</section>
 
-    <section class="weekday">
-        <h1>Weekday Routines</h1>
-        {% for routine in routines %}
-            <div class="{{ routine.name|replace_spaces }}-routine">
-                <h2>{{ routine.name }}</h2>
-                <p>{{ routine.instruction }}</p>
-                <a href="{% url 'edit_routine' routine.id %}">Edit</a>
-            </div>
-        {% endfor %}
-    </section>
+<section class="weekends">
+    <h1>Weekend Routines</h1>
+    {% for routine in weekend_routines %}
+        <div class="{{ routine.name|replace_spaces }}-routine">
+            <h2>{{ routine.name }}</h2>
+            <p>{{ routine.instruction }}</p>
+            <p><strong>Time:</strong> {{ routine.start_time|time:"H:i" }} - {{ routine.end_time|time:"H:i" }}</p>
+            <a href="{% url 'edit_routine' routine.id %}">Edit</a>
+        </div>
+    {% empty %}
+        <div class="bs-empty">
+            <h3>No weekend routines yet</h3>
+            <p>Weekends deserve their own rhythm too.</p>
+        </div>
+    {% endfor %}
+</section>
+{% endblock %}
 
-    <section class="weekends">
-        <h1>Weekend Routines</h1>
-        {% for routine in weekend_routines %}
-            <div class="{{ routine.name|replace_spaces }}-routine">
-                <h2>{{ routine.name }}</h2>
-                <p>{{ routine.instruction }}</p>
-                <a href="{% url 'edit_routine' routine.id %}">Edit</a>
-            </div>
-        {% endfor %}
-    </section>
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const isWeekendCheckbox = document.querySelector('#id_is_weekend');
+    const daysCheckboxes = document.querySelectorAll('input[name="days_of_week"]');
+
+    function updateCheckboxes() {
+        daysCheckboxes.forEach(cb => {
+            const dayValue = parseInt(cb.value);
+            if (isWeekendCheckbox.checked) {
+                cb.disabled = (dayValue < 5);
+                if (dayValue < 5) cb.checked = false;
+            } else {
+                cb.disabled = (dayValue >= 5);
+                if (dayValue >= 5) cb.checked = false;
+            }
+        });
+    }
+
+    if (isWeekendCheckbox) {
+        isWeekendCheckbox.addEventListener('change', updateCheckboxes);
+        updateCheckboxes();
+    }
+});
+</script>
+{% endblock %}
+
+{% block footer %}
+<footer>
+    <p>&copy; 2026 LifeApp. All rights reserved.</p>
+</footer>
 {% endblock %}

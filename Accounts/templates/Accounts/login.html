@@ -1,30 +1,53 @@
-<!DOCTYPE html>
+{% extends 'base1.html' %}
 {% load static %}
-{% load socialaccount %}
-<html>
-    
-<head>
-	<title>Login</title>
-	<link rel="stylesheet" href="{% static 'login.css' %}" >
 
-</head>
-<body>
-	<div>
-		<form method="POST" action="">
-			{% csrf_token %}
-			{{ form.as_p }}
-			<button type="submit" class="btn glow-effect">submit😎
-				<svg class="glow-container">
-    				<rect class="glow-blur" pathlength="100" stroke-line-cap="round"></rect>
-    				<rect class="glow-line" pathlength="100" stroke-line-cap="round"></rect>
-    			</svg>
-		    </button>
-		</form>
+{% block head %}
+    {{ block.super }}
+    <title>Log in — LifeApp</title>
+    <link rel="stylesheet" href="{% static 'auth.css' %}">
+{% endblock %}
+
+{% block body %}
+<div class="auth-page">
+    {% if messages %}
+        <section class="messages">
+            {% for message in messages %}
+                <p class="{{ message.tags }}">{{ message }}</p>
+            {% endfor %}
+        </section>
+    {% endif %}
+
+    <div class="auth-card">
+        <a href="{% url 'welcomepage' %}" class="auth-brand">
+            <span class="mark">L</span> LifeApp
+        </a>
+        <h1>Welcome back</h1>
+        <p class="auth-sub">Log in to pick up where you left off.</p>
+
         {% if error %}
-            <div class="alert alert-danger mt-3">{{ error }}</div>
+        <div class="form-errors" style="display:block;">{{ error }}</div>
         {% endif %}
-		<a href="{% provider_login_url 'google' %}">Sign in with google</a>
-	</div>
-</body>
 
-</html>
+        <form method="POST" action="{% url 'login' %}">
+            {% csrf_token %}
+            <div class="single-p">
+                <label class="label" for="login-email">Email</label>
+                <input type="email" id="login-email" name="email" class="form-control"
+                       value="{{ email|default:'' }}" required autocomplete="email">
+            </div>
+            <div class="single-p">
+                <label class="label" for="login-password">Password</label>
+                <input type="password" id="login-password" name="password" class="form-control"
+                       required autocomplete="current-password">
+                <p style="margin-top:0.35rem; margin-bottom:0; text-align:right;">
+                    <a href="{% url 'forgot-password' %}" class="auth-footer-link" style="font-size:0.85rem;">Forgot password?</a>
+                </p>
+            </div>
+            <button type="submit" class="bs-btn bs-btn--primary auth-submit">
+                Log in
+            </button>
+            <p class="auth-footer-link">New here? <a href="{% url 'sign-up' %}">Create an account</a></p>
+        </form>
+    </div>
+</div>
+{% endblock %}

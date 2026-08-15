@@ -1,34 +1,39 @@
-{% extends 'base.html' %}
+{% extends 'base1.html' %}
 {% load static %}
 
 {% block head %}
-	<title>Betterself_HomePage</title>
-	<link rel="stylesheet" href="{% static 'index.css' %}">
+	{{ block.super }}
+	<title>LifeApp — Your personal operating system</title>
+	<link rel="stylesheet" href="{% static 'auth.css' %}">
 {% endblock %}
 {% block body %}
-	<section class="mastercard">
-		<div class="card">
-			<h3>Hi There! 👋🏾</h3>
-
-			<h1>Welcome to BetterSelf</h1>
-			<div class="card1">
-				<a href="{% url 'login'%}" class="btn-1 glow-effect" > Login😎
-					<svg class="glow-container">
-						<rect class="glow-blur" pathlength="100" stroke-line-cap="round"></rect>
-						<rect class="glow-line" pathlength="100" stroke-line-cap="round"></rect>
-					</svg>
-				</a>
-				<a href="{% url 'sign-up'%}" class="btn-2 glow-effect" > 🤩Register
-					<svg class="glow-container">
-						<rect class="glow-blur" pathlength="100" stroke-line-cap="round"></rect>
-						<rect class="glow-line" pathlength="100" stroke-line-cap="round"></rect>
-					</svg>
-				</a>
+	<div class="landing">
+		<div class="landing-content">
+			<span class="bs-eyebrow">Welcome</span>
+			<h1>Connect what you do today to who you're becoming.</h1>
+			<p class="landing-lede">LifeApp brings your goals, routines, schedule, and reflections into one
+				calm, visual home — so progress stays visible and priorities stay clear.</p>
+			<div class="landing-actions">
+				<a href="{% url 'login' %}" class="bs-btn bs-btn--primary">Log in</a>
+				<a href="{% url 'sign-up' %}" class="bs-btn bs-btn--secondary">Create an account</a>
 			</div>
 		</div>
-		<footer>
-			<p>©Betterself2024</p>
-		</footer>
-	</section>
+		<div class="landing-visual" aria-hidden="true">
+			<div class="landing-card landing-card--1">
+				<i class="fa-solid fa-bullseye"></i>
+				<span>Goals broken into daily steps</span>
+			</div>
+			<div class="landing-card landing-card--2">
+				<i class="fa-solid fa-repeat"></i>
+				<span>Routines that build streaks</span>
+			</div>
+			<div class="landing-card landing-card--3">
+				<i class="fa-solid fa-feather"></i>
+				<span>A quiet place to reflect</span>
+			</div>
+		</div>
+	</div>
+	<footer class="landing-footer">
+		<p>&copy; 2026 LifeApp</p>
+	</footer>
 {% endblock %}
-</html>

@@ -1,17 +1,21 @@
 from allauth.account.adapter import DefaultAccountAdapter
-from django.shortcuts import redirect
+from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
+from django.conf import settings
+
 
 class MyAccountAdapter(DefaultAccountAdapter):
-    def is_open_for_signup(self, request):
-        # Disable sign-up via social accounts (Google) and auto-login
-        return False
-
     def get_login_redirect_url(self, request):
-        return "/betterself/Accounts/dashboard/"
+        return settings.LOGIN_REDIRECT_URL
 
-class CustomSocialAccountAdapter(DefaultAccountAdapter):
-    def authenticate(self, request, **credentials):
-        user = super().authenticate(request, **credentials)
-        if user and not user.has_usable_password():
-            return redirect("signup")  # Redirect Google users to complete signup
-        return user
+    def get_logout_redirect_url(self, request):
+        return settings.LOGOUT_REDIRECT_URL
+
+
+class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
+    def is_open_for_signup(self, request, sociallogin):
+        return True
+
+    def pre_social_login(self, request, sociallogin):
+        user = sociallogin.user
+        if user and user.email:
+            user.email = user.email.lower()

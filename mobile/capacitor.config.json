@@ -1,0 +1,19 @@
+{
+  "appId": "com.lifeapp.betterself",
+  "appName": "LifeApp",
+  "webDir": "www",
+  "server": {
+    "url": "https://wriggly-flatten-panama.ngrok-free.dev",
+    "androidScheme": "https",
+    "cleartext": false,
+    "allowNavigation": [
+      "wriggly-flatten-panama.ngrok-free.dev"
+    ]
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": true,
+      "launchShowDuration": 600
+    }
+  }
+}

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Your Categories{% endblock %}
+{% block page_title %}Categories{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'category_list.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="bs-page-header">
+    <div>
+        <span class="bs-eyebrow">Inventory</span>
+        <h1>Categories</h1>
+        <p>Use parent categories to group related inventory.</p>
+    </div>
+    <div class="bs-page-header-actions">
+        <a href="{% url 'category-create' %}" class="bs-btn bs-btn--primary">Add category</a>
+    </div>
+</div>
+
+{% if categories %}
+<table class="table table-striped inventory-table">
+    <thead>
+        <tr>
+            <th>Category</th>
+            <th>Parent</th>
+            <th>Items</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for category in categories %}
+            <tr>
+                <td class="category-cell">
+                    <span class="category-icon-badge">
+                        {% if category.thumbnail %}
+                            <img src="{{ category.thumbnail.url }}" alt="{{ category.name }}" loading="lazy">
+                        {% elif category.image %}
+                            <img src="{{ category.image.url }}" alt="{{ category.name }}" loading="lazy">
+                        {% else %}
+                            <i class="fa-solid fa-{{ category.icon }}"></i>
+                        {% endif %}
+                    </span>
+                    {{ category.full_path }}
+                </td>
+                <td>{% if category.parent %}{{ category.parent.full_path }}{% else %}Top level{% endif %}</td>
+                <td>{{ category.items.count }}</td>
+                <td>
+                    <a href="{% url 'category-delete' category.pk %}" class="bs-btn bs-btn--sm bs-btn--danger">Delete</a>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="bs-empty">
+    <h3>No categories yet</h3>
+    <p>Create your first category to start organizing your inventory.</p>
+    <a href="{% url 'category-create' %}" class="bs-btn bs-btn--primary">Add category</a>
+</div>
+{% endif %}
+{% endblock %}

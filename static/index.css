@@ -13,7 +13,7 @@ body {
     grid-template-rows: repeat(8, 1fr);
     grid-template-columns: repeat(8, 1fr);
     height: var(--height);
-    background-image: url("\index2.jpg");
+    background-image: url("index2.jpg");
     background-size: cover;   /* Ensures the image covers the entire container */
     background-position: center center;  /* Keeps the background centered */
     background-repeat: no-repeat; /* Prevents the image from repeating */
@@ -140,10 +140,10 @@ footer{
 
     }
     .card1{
-        height: calc(100% * .7);
+        height: calc(100% * .9);
     }
     .btn-1, .btn-2{
-        padding: .5em .5em;
+        padding: 0em;
         margin: 5px;
     }
     .btn-1 {
@@ -151,5 +151,50 @@ footer{
     }
     .btn-2 {
     grid-area: 3 / 3 / 4 / 7;
+    }
+}
+
+@media screen and (max-width: 500px) {
+    .mastercard {
+        grid-template-rows: 1fr;
+        grid-template-columns: 1fr;
+        height: auto;
+        padding: 10px;
+    }
+
+    .card {
+        grid-area: auto;
+        margin: 10px;
+        padding: 20px 15px;
+        border-radius: 0.75rem;
+    }
+
+    .card h1 {
+        font-size: 1.5rem;
+    }
+
+    .card h3 {
+        font-size: 1rem;
+    }
+
+    .card1 {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .btn-1, .btn-2 {
+        width: 100%;
+        padding: 0.75em;
+        font-size: 0.95rem;
+        grid-area: auto; /* override grid placement */
+    }
+
+    footer {
+        grid-area: auto;
+        margin-top: 15px;
+        font-size: 0.8rem;
+        text-align: center;
     }
 }
